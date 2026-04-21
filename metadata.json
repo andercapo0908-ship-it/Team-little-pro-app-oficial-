@@ -1,0 +1,8 @@
+{
+  "name": "TEAM LITTLE",
+  "description": "Aplicativo premium para personal trainers: gestão de alunos, treinos e evolução com Dashboard inteligente.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}

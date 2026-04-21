@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    // Check if the user is a hardcoded admin or has the admin role in the DB
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "andercapo0908@gmail.com" ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isTrainer() {
+      return isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "trainer");
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validations ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'name', 'email', 'role', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.email is string && data.email.size() > 0 &&
+             data.role in ['admin', 'trainer', 'student'];
+    }
+
+    function isValidWorkout(data) {
+      return data.keys().hasAll(['id', 'studentId', 'trainerId', 'name', 'division', 'exercises']) &&
+             data.studentId is string && data.trainerId is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.exercises is list && data.exercises.size() <= 100;
+    }
+
+    function isValidAppSettings(data) {
+      return data.keys().hasAll(['logoUrl', 'globalAnnouncement', 'coachNote', 'updatedAt']) &&
+             data.logoUrl is string &&
+             data.globalAnnouncement is string && data.globalAnnouncement.size() <= 2000 &&
+             data.coachNote is string && data.coachNote.size() <= 2000;
+    }
+
+    // --- Routes ---
+
+    // Public config - Everyone can read to see the logo and announcements
+    match /config/app {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUserProfile(incoming());
+      allow update: if (isOwner(userId) || isAdmin()) && 
+                    isValidUserProfile(incoming()) &&
+                    (isAdmin() || incoming().role == existing().role); 
+    }
+
+    match /students/{studentId} {
+      allow read: if isOwner(studentId) || isTrainer();
+      allow write: if isTrainer();
+    }
+
+    match /workouts/{workoutId} {
+      allow read: if isSignedIn() && (
+        isOwner(resource.data.studentId) || 
+        isOwner(resource.data.trainerId) || 
+        isAdmin()
+      );
+      allow create: if isTrainer() && isValidWorkout(incoming());
+      allow update: if (isTrainer() || isAdmin()) && isValidWorkout(incoming());
+      allow delete: if isTrainer() || isAdmin();
+    }
+
+    // Legacy/Test path
+    match /test/{docId} {
+      allow read: if true;
+    }
+  }
+}

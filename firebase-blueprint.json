@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Informações de perfil do usuário (Personal ou Aluno)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "ID único do Firebase Auth" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "trainer", "student"] },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Dados detalhados do aluno",
+      "type": "object",
+      "properties": {
+        "trainerId": { "type": "string" },
+        "age": { "type": "number" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "goal": { "type": "string" },
+        "groups": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      }
+    },
+    "Workout": {
+      "title": "Workout",
+      "description": "Ficha de treino personalizada",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "trainerId": { "type": "string" },
+        "name": { "type": "string" },
+        "division": { "type": "string", "description": "A, B, C, etc." },
+        "duration": { "type": "string", "description": "Duração do treino em string, ex: 45 min" },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "sets": { "type": "number" },
+              "reps": { "type": "string" },
+              "load": { "type": "string" },
+              "rest": { "type": "string" },
+              "muscleGroup": { "type": "string" },
+              "videoUrl": { "type": "string" },
+              "progress": { "type": "string", "enum": ["Não Iniciado", "Em Progresso", "Completo"] }
+            }
+          }
+        }
+      }
+    },
+    "AppSettings": {
+      "title": "App Settings",
+      "description": "Configurações globais do aplicativo",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "globalAnnouncement": { "type": "string" },
+        "coachNote": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "Collection de perfis de usuário"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Dados complementares de alunos"
+    },
+    "/workouts/{workoutId}": {
+      "schema": "Workout",
+      "description": "Treinos dos alunos"
+    },
+    "/config/app": {
+      "schema": "AppSettings",
+      "description": "Configurações globais"
+    }
+  }
+}
