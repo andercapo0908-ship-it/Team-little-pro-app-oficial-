@@ -29,21 +29,17 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
     // Listen for all users
     const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
       setUsers(snap.docs.map(d => d.data() as UserProfile));
+    }, (err) => {
+      console.error("Admin Users sync error:", err);
     });
 
     // Listen for settings (single doc in 'config/app')
     const unsubSettings = onSnapshot(doc(db, "config", "app"), (snap) => {
       if (snap.exists()) {
         setSettings(snap.data() as AppSettings);
-      } else {
-        // Initial defaults if not exists
-        setSettings({
-          logoUrl: "https://i.ibb.co/qYQQb0H1/file-00000000a510720e9e72df18c9f018c8.png",
-          globalAnnouncement: "Workshop de Dieta Flexível Sábado 10h!",
-          coachNote: "Foco no tempo de descanso: 45s cravados.",
-          updatedAt: new Date().toISOString()
-        });
       }
+    }, (err) => {
+      console.error("Admin Settings sync error:", err);
     });
 
     return () => {
@@ -52,8 +48,28 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
     };
   }, []);
 
+  // Auto-save logic for settings
+  useEffect(() => {
+    if (!settings) return;
+    const timer = setTimeout(async () => {
+      try {
+        await updateDoc(doc(db, "config", "app"), {
+          ...settings,
+          updatedAt: new Date().toISOString()
+        });
+        setMessage("Configurações Sincronizadas");
+        setTimeout(() => setMessage(""), 2000);
+      } catch (err) {
+        console.error("Auto-save error:", err);
+      }
+    }, 1500); // Save after 1.5s of no changes
+
+    return () => clearTimeout(timer);
+  }, [settings]);
+
   const handleUpdateSettings = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Manual save button still works but auto-save handles it too
     if (!settings) return;
     setSaving(true);
     try {
@@ -92,20 +108,20 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
     <div className="p-6 pb-32 max-w-6xl mx-auto space-y-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-           <h2 className="text-6xl font-black italic tracking-tighter uppercase mb-2">Painel de Controle</h2>
-           <p className="text-amber-500 font-mono text-[10px] uppercase tracking-[0.5em] font-black">Central de Engenharia de Perfomance</p>
+           <h2 className="text-6xl font-black italic tracking-tighter uppercase mb-2">Engenharia <span className="text-neon">PRO</span></h2>
+           <p className="text-neon font-mono text-[10px] uppercase tracking-[0.5em] font-black">Painel de Controle Elite do Team Little</p>
         </div>
 
         <div className="flex bg-neutral-900 p-1.5 rounded-2xl border border-white/5 shadow-2xl">
            <button 
              onClick={() => setActiveMenu('users')}
-             className={`px-6 py-3 rounded-xl flex items-center gap-3 transition-all ${activeMenu === 'users' ? 'bg-amber-500 text-black font-black italic' : 'text-slate-500 hover:text-white'}`}
+             className={`px-6 py-3 rounded-xl flex items-center gap-3 transition-all ${activeMenu === 'users' ? 'bg-neon text-black font-black italic' : 'text-slate-500 hover:text-white'}`}
            >
              <Users size={18} /> <span className="text-[10px] font-mono uppercase tracking-widest leading-none">Usuários</span>
            </button>
            <button 
              onClick={() => setActiveMenu('settings')}
-             className={`px-6 py-3 rounded-xl flex items-center gap-3 transition-all ${activeMenu === 'settings' ? 'bg-amber-500 text-black font-black italic' : 'text-slate-500 hover:text-white'}`}
+             className={`px-6 py-3 rounded-xl flex items-center gap-3 transition-all ${activeMenu === 'settings' ? 'bg-neon text-black font-black italic' : 'text-slate-500 hover:text-white'}`}
            >
              <Settings size={18} /> <span className="text-[10px] font-mono uppercase tracking-widest leading-none">App Config</span>
            </button>

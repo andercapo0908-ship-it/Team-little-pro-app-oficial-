@@ -25,17 +25,18 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
     <div className="flex flex-col pb-32 pt-2 space-y-6">
       
       {/* Motivational Marquee */}
-      <div className="w-full bg-amber-500 overflow-hidden py-2 relative flex items-center border-y border-white/10 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+      <div className="w-full bg-neon overflow-hidden py-2 relative flex items-center border-y border-white/10 shadow-[0_0_20px_rgba(57,255,20,0.2)]">
         <motion.div 
           animate={{ x: ["0%", "-50%"] }} 
-          transition={{ duration: 15, ease: "linear", repeat: Infinity }}
+          transition={{ duration: 25, ease: "linear", repeat: Infinity }}
+          style={{ willChange: "transform" }}
           className="whitespace-nowrap flex"
         >
           <span className="text-black font-black italic uppercase tracking-[0.2em] text-[10px] mx-4">
-            A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • TREINE COMO UM PROFISSIONAL • NUNCA DESISTA • MANTENHA O FOCO • 
+            TEAM LITTLE PRO • A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • PERFORMANCE DE ELITE • NO LIMITS • 
           </span>
           <span className="text-black font-black italic uppercase tracking-[0.2em] text-[10px] mx-4">
-            A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • TREINE COMO UM PROFISSIONAL • NUNCA DESISTA • MANTENHA O FOCO • 
+            TEAM LITTLE PRO • A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • PERFORMANCE DE ELITE • NO LIMITS • 
           </span>
         </motion.div>
       </div>
@@ -44,24 +45,24 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
         {/* Welcome Header */}
         <div className="text-center mb-4 mt-2">
           <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">
-            Salve, <span className="text-amber-500">{profile?.name?.split(' ')[0] || 'Atleta'}</span>!
+            Salve, <span className="text-neon">{profile?.name?.split(' ')[0] || 'Atleta'}</span>!
           </h2>
-          <p className="text-slate-500 text-[10px] uppercase font-mono tracking-widest mt-1">Pronto para o próximo nível?</p>
+          <p className="text-slate-500 text-[10px] uppercase font-mono tracking-widest mt-1">Bem-vindo ao Team Little <span className="text-neon font-black underline underline-offset-4">PRO</span></p>
         </div>
 
         {/* Daily Check-in */}
         <motion.div 
           whileHover={{ scale: 1.02 }}
-          className={`p-6 rounded-[2rem] border relative overflow-hidden transition-all duration-300 ${checkedIn ? 'bg-amber-500/10 border-amber-500/30' : 'bg-neutral-900 border-white/5'}`}
+          className={`p-6 rounded-[2rem] border relative overflow-hidden transition-all duration-300 ${checkedIn ? 'bg-neon/10 border-neon/30' : 'bg-neutral-900 border-white/5'}`}
         >
           <div className="flex justify-between items-center z-10 relative">
             <div>
               <h3 className="text-white font-black italic uppercase text-lg flex items-center gap-2">
-                <CalendarCheck className={checkedIn ? "text-amber-500" : "text-slate-400"} size={20} />
-                Login Diário
+                <CalendarCheck className={checkedIn ? "text-neon" : "text-slate-400"} size={20} />
+                Check-in PRO
               </h3>
               <p className="text-slate-400 text-[10px] uppercase font-mono tracking-widest mt-1">
-                {checkedIn ? "Treino de hoje registrado!" : "Confirme sua presença hoje"}
+                {checkedIn ? "Atleta em atividade!" : "Confirme sua prontidão hoje"}
               </p>
             </div>
             <button 
@@ -69,14 +70,14 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
               disabled={checkedIn}
               className={`px-6 py-3 rounded-xl font-black italic uppercase text-[10px] tracking-widest transition-all ${
                 checkedIn 
-                ? 'bg-amber-500/20 text-amber-500 cursor-not-allowed' 
-                : 'bg-amber-500 text-black hover:bg-white shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                ? 'bg-neon/20 text-neon cursor-not-allowed' 
+                : 'bg-neon text-black hover:bg-white shadow-[0_0_15px_rgba(57,255,20,0.3)]'
               }`}
             >
-              {checkedIn ? "Confirmado" : "Fazer Login"}
+              {checkedIn ? "Focado" : "Entrar no Game"}
             </button>
           </div>
-          {checkedIn && <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[40px] rounded-full" />}
+          {checkedIn && <div className="absolute top-0 right-0 w-32 h-32 bg-neon/10 blur-[40px] rounded-full" />}
         </motion.div>
 
         {/* Global Announcements */}

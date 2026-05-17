@@ -66,6 +66,57 @@
         "coachNote": { "type": "string" },
         "updatedAt": { "type": "string", "format": "date-time" }
       }
+    },
+    "LibraryExercise": {
+      "title": "Library Exercise",
+      "description": "Exercício cadastrado na biblioteca global ou do personal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "muscleGroup": { "type": "string" },
+        "equipment": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["Iniciante", "Intermediário", "Avançado"] },
+        "videoUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "trainerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Produto da loja",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "promoPrice": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "sizes": { "type": "array", "items": { "type": "string" } },
+        "colors": { "type": "array", "items": { "type": "string" } },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "whatsappNumber": { "type": "string" },
+        "pixKey": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "TransformationPost": {
+      "title": "Transformation Post",
+      "description": "Postagem de transformação (antes e depois)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "beforeUrl": { "type": "string" },
+        "afterUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "likes": { "type": "number" }
+      }
     }
   },
   "firestore": {
@@ -84,6 +135,18 @@
     "/config/app": {
       "schema": "AppSettings",
       "description": "Configurações globais"
+    },
+    "/exercises/{exerciseId}": {
+      "schema": "LibraryExercise",
+      "description": "Biblioteca de exercícios"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Produtos da loja"
+    },
+    "/transformations/{transformationId}": {
+      "schema": "TransformationPost",
+      "description": "Galeria de transformações"
     }
   }
 }

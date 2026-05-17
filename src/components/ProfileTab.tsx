@@ -43,7 +43,6 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
         name: tempProfile.name
       });
       setIsEditingProfile(false);
-      window.location.reload(); 
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,14 +82,14 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
   };
 
   return (
-    <div className="p-6 pb-24 max-w-5xl mx-auto space-y-16">
+    <div className="p-6 pb-32 max-w-5xl mx-auto space-y-16">
       {/* Header Profile */}
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col md:flex-row items-center gap-10"
       >
-        <div className="w-48 h-48 rounded-[3.5rem] border-4 border-[#CA9B00] overflow-hidden shadow-[0_0_60px_rgba(202,155,0,0.2)] relative group flex-shrink-0">
+        <div className="w-48 h-48 rounded-[3.5rem] border-4 border-neon overflow-hidden shadow-[0_0_60px_rgba(57,255,20,0.2)] relative group flex-shrink-0">
           <img 
             src={profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.uid}`} 
             alt={profile?.name} 
@@ -100,10 +99,10 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
             onClick={() => { setTempProfile(profile); setIsEditingProfile(true); }}
             className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
-             <Edit2 className="text-[#CA9B00]" size={32} />
+             <Edit2 className="text-neon" size={32} />
           </button>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-4 pointer-events-none">
-            <span className="text-[10px] font-black italic uppercase text-[#CA9B00] tracking-[0.3em]">Status: ELITE</span>
+            <span className="text-[10px] font-black italic uppercase text-neon tracking-[0.3em]">Status: PRO ATLETA</span>
           </div>
         </div>
         <div className="text-center md:text-left">
@@ -118,10 +117,10 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
           </div>
           <div className="flex flex-wrap justify-center md:justify-start gap-3">
             <span className="bg-neutral-900 border border-white/10 px-6 py-2 rounded-2xl text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 font-bold shadow-xl">
-              <Activity size={14} className="text-[#CA9B00]" /> {healthData.goal}
+              <Activity size={14} className="text-neon" /> {healthData.goal}
             </span>
-            <span className="bg-neutral-900 border border-white/10 px-6 py-2 rounded-2xl text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 font-bold shadow-xl">
-              <Calendar size={14} className="text-[#CA9B00]" /> Membro Ativo
+            <span className="bg-neutral-900 border border-white/10 px-6 py-2 rounded-2xl text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 font-bold shadow-xl text-neon">
+              <Calendar size={14} /> TEAM LITTLE PRO
             </span>
           </div>
         </div>
@@ -130,14 +129,14 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
       {/* Metrics Grid */}
       <div className="space-y-4">
         <div className="flex justify-between items-end ml-4 mb-4">
-           <h3 className="text-[11px] font-mono uppercase tracking-[0.6em] text-slate-500 font-black">Métricas Corporais</h3>
+           <h3 className="text-[11px] font-mono uppercase tracking-[0.6em] text-slate-500 font-black">Métricas de Performance</h3>
            
            {!isEditingMetrics ? (
              <button 
                onClick={() => setIsEditingMetrics(true)}
-               className="text-[#CA9B00] text-[10px] uppercase font-black tracking-widest flex items-center gap-2 hover:text-white transition-colors"
+               className="text-neon text-[10px] uppercase font-black tracking-widest flex items-center gap-2 hover:text-white transition-colors"
              >
-               <Edit2 size={12} /> Atualizar
+               <Edit2 size={12} /> Atualizar Bio
              </button>
            ) : (
              <button 
@@ -152,9 +151,9 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Peso (kg)', field: 'weight', val: healthData.weight, icon: Scale, color: 'text-[#CA9B00]', step: '0.1' },
+            { label: 'Peso (kg)', field: 'weight', val: healthData.weight, icon: Scale, color: 'text-neon', step: '0.1' },
             { label: 'Altura (m)', field: 'height', val: healthData.height, icon: TrendingUp, color: 'text-blue-500', step: '0.01' },
-            { label: 'Gordura (%)', field: 'bf', val: healthData.bf, icon: Heart, color: 'text-red-500', step: '0.1' },
+            { label: 'Gordura (%)', field: 'bf', val: healthData.bf, icon: Heart, color: 'text-rose-500', step: '0.1' },
             { label: 'Freq (bpm)', field: 'heartRate', val: healthData.heartRate, icon: Activity, color: 'text-emerald-500', step: '1' },
           ].map((m, i) => (
             <motion.div 
@@ -162,7 +161,7 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.05 }}
-              className={`p-6 sm:p-8 bg-neutral-900 border ${isEditingMetrics ? 'border-[#CA9B00]/40 shadow-[0_0_20px_rgba(202,155,0,0.1)]' : 'border-white/5'} rounded-[3rem] hover:border-[#CA9B00]/20 transition-all group overflow-hidden relative shadow-2xl`}
+              className={`p-6 sm:p-8 bg-neutral-900 border ${isEditingMetrics ? 'border-neon/40 shadow-[0_0_20px_rgba(57,255,20,0.1)]' : 'border-white/5'} rounded-[3rem] hover:border-neon/20 transition-all group overflow-hidden relative shadow-2xl`}
             >
               <div className={`absolute -top-4 -right-4 p-4 opacity-5 group-hover:opacity-20 transition-all duration-500 ${m.color} scale-150 pointer-events-none`}>
                 <m.icon size={60} />
@@ -176,7 +175,7 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
                   min="0"
                   value={m.val || ''}
                   onChange={(e) => updateHealthField(m.field as keyof HealthMetrics, e.target.value)}
-                  className={`w-full bg-black/50 border-b-2 border-[#CA9B00] text-3xl font-black italic text-white tracking-tight outline-none py-1 focus:bg-black/80 transition-colors`}
+                  className={`w-full bg-black/50 border-b-2 border-neon text-3xl font-black italic text-white tracking-tight outline-none py-1 focus:bg-black/80 transition-colors`}
                 />
               ) : (
                 <p className="text-3xl font-black italic text-white tracking-tight">
@@ -214,13 +213,13 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
         </div>
 
         <div className="space-y-8">
-          <h3 className="text-[11px] font-mono uppercase tracking-[0.6em] text-slate-500 ml-4 font-black">Evolução Atlética</h3>
-          <div className="bg-[#CA9B00] p-10 rounded-[3.5rem] text-black shadow-2xl shadow-[#CA9B00]/10 relative overflow-hidden group">
+          <h3 className="text-[11px] font-mono uppercase tracking-[0.6em] text-slate-500 ml-4 font-black">Evolução Atlética PRO</h3>
+          <div className="bg-neon p-10 rounded-[3.5rem] text-black shadow-2xl shadow-neon/10 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                  <TrendingUp size={120} />
               </div>
-              <h4 className="text-3xl font-black italic uppercase mb-3 leading-none tracking-tighter">Power Score: 8.5</h4>
-              <p className="text-sm font-bold opacity-90 leading-relaxed italic">Você superou suas cargas em 12% nos últimos 30 dias. Mantendo essa cadência atingimos o objetivo em Outubro.</p>
+              <h4 className="text-3xl font-black italic uppercase mb-3 leading-none tracking-tighter">Power Score: 9.2</h4>
+              <p className="text-sm font-bold opacity-90 leading-relaxed italic">DNA TEAM LITTLE PRO DETECTADO. Desempenho 15% acima da média do Team.</p>
               <div className="flex gap-2.5 mt-8">
                  {[1,2,3,4,5].map(i => (
                    <div key={i} className="flex-1 h-2.5 bg-black/10 rounded-full overflow-hidden">
@@ -271,9 +270,9 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
                     <button 
                       onClick={handleSaveProfile}
                       disabled={saving}
-                      className="w-full py-5 bg-[#CA9B00] text-black font-black italic uppercase rounded-2xl tracking-tighter flex items-center justify-center gap-3 text-lg shadow-xl shadow-[#CA9B00]/10"
+                      className="w-full py-5 bg-neon text-black font-black italic uppercase rounded-2xl tracking-tighter flex items-center justify-center gap-3 text-lg shadow-xl shadow-neon/10"
                     >
-                      {saving ? "Salvando DNA..." : <>Salvar Alterações <Save size={24} /></>}
+                      {saving ? "Salvando DNA..." : <>Otimizar Perfil PRO <Save size={24} /></>}
                     </button>
                   </div>
               </motion.div>

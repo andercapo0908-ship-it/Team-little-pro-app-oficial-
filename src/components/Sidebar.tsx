@@ -12,7 +12,9 @@ import {
   ShieldCheck,
   ShoppingBag,
   DollarSign,
-  ImageIcon
+  ImageIcon,
+  BrainCircuit,
+  BookOpen
 } from "lucide-react";
 import React from "react";
 
@@ -27,13 +29,15 @@ interface SidebarProps {
 
 export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, onLogout, role }: SidebarProps) => {
   const menuItems = [
-    { id: 'home', label: 'Estatísticas', icon: LayoutDashboard }, // Or map to 'home'
-    { id: 'profile', label: role === 'student' ? 'Meu Perfil' : 'Alunos', icon: role === 'student' ? UserIcon : Users },
-    { id: 'workouts', label: 'Treinos / Fichas', icon: Dumbbell },
+    { id: 'home', label: 'Estatísticas PRO', icon: LayoutDashboard },
+    { id: 'profile', label: role === 'student' ? 'Meu Perfil' : 'Alunos do Team', icon: role === 'student' ? UserIcon : Users },
+    { id: 'workouts', label: 'Fichas de Performance', icon: Dumbbell },
+    { id: 'ai_coach', label: 'Personal Inteligente', icon: BrainCircuit },
     { id: 'portfolio', label: 'Nosso Team', icon: Award },
     { id: 'store', label: 'Loja Team Little', icon: ShoppingBag },
     { id: 'financial', label: 'Financeiro', icon: DollarSign },
     { id: 'gallery', label: 'Mural de Transformação', icon: ImageIcon },
+    { id: 'educational', label: 'Conteúdo PRO', icon: BookOpen },
     { id: 'consulting', label: 'Consultoria Premium', icon: MessageSquare },
   ];
 
@@ -71,11 +75,11 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
                   onClick={() => { onTabChange(item.id); onClose(); }}
                   className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group ${
                     activeTab === item.id 
-                    ? 'bg-amber-500 text-black font-black italic shadow-lg shadow-amber-500/20' 
+                    ? 'bg-neon text-black font-black italic shadow-lg shadow-neon/40' 
                     : 'text-slate-400 hover:bg-white/5 hover:text-white underline-offset-4'
                   }`}
                 >
-                  <item.icon size={20} className={activeTab === item.id ? 'text-black' : 'group-hover:text-amber-500 transition-colors'} />
+                  <item.icon size={20} className={activeTab === item.id ? 'text-black' : 'group-hover:text-neon transition-colors'} />
                   <span className="uppercase tracking-[0.2em] text-[10px] font-mono">{item.label}</span>
                 </button>
               ))}

@@ -19,7 +19,8 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "andercapo0908@gmail.com" ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
       );
     }
 
@@ -28,7 +29,9 @@ service cloud.firestore {
     }
 
     function isTrainer() {
-      return isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "trainer");
+      return isAdmin() || (isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "trainer");
     }
 
     function isValidId(id) {
@@ -96,6 +99,32 @@ service cloud.firestore {
       allow create: if isTrainer() && isValidWorkout(incoming());
       allow update: if (isTrainer() || isAdmin()) && isValidWorkout(incoming());
       allow delete: if isTrainer() || isAdmin();
+    }
+
+    match /exercises/{exerciseId} {
+      allow read: if isSignedIn();
+      allow create: if isTrainer();
+      allow update: if isTrainer() && (isAdmin() || resource.data.trainerId == request.auth.uid);
+      allow delete: if isTrainer() && (isAdmin() || resource.data.trainerId == request.auth.uid);
+    }
+
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isTrainer();
+    }
+
+    match /content/{contentId} {
+      allow read: if isSignedIn();
+      allow create: if isTrainer();
+      allow update: if isTrainer() && (isAdmin() || resource.data.trainerId == request.auth.uid);
+      allow delete: if isTrainer() && (isAdmin() || resource.data.trainerId == request.auth.uid);
+    }
+
+    match /transformations/{transformationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || isTrainer() || resource.data.studentId == request.auth.uid;
+      allow delete: if isAdmin() || isTrainer() || resource.data.studentId == request.auth.uid;
     }
 
     // Legacy/Test path

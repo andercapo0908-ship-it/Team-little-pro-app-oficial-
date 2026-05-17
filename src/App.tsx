@@ -32,9 +32,11 @@ import { StoreTab } from "./components/StoreTab";
 import { FinancialTab } from "./components/FinancialTab";
 import { ConsultingTab } from "./components/ConsultingTab";
 import { GalleryTab } from "./components/GalleryTab";
+import { EducationalTab } from "./components/EducationalTab";
 import { LandingPage } from "./components/auth/LandingPage";
 import { LoginForm } from "./components/auth/LoginForm";
 import { AdminTab } from "./components/AdminTab";
+import { AICoachTab } from "./components/AICoachTab";
 
 // --- Types & Constants ---
 enum OperationType { CREATE = 'create', UPDATE = 'update', DELETE = 'delete', LIST = 'list', GET = 'get', WRITE = 'write' }
@@ -55,10 +57,10 @@ class ErrorBoundary extends React.Component<any, any> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center text-white">
-          <h1 className="text-2xl font-bold text-red-500 mb-4 uppercase italic">Falha Crítica de Sistema</h1>
+          <h1 className="text-2xl font-bold text-neon mb-4 uppercase italic">Falha Crítica de Sistema</h1>
           <p className="text-slate-500 mb-6 font-mono text-xs uppercase tracking-widest">{this.state.error?.message || "Erro desconhecido"}</p>
-          <button onClick={() => window.location.reload()} className="px-8 py-4 bg-amber-500 text-black font-black italic rounded-none flex items-center gap-2 uppercase tracking-tighter shadow-2xl">
-            Reinicializar DNA
+          <button onClick={() => window.location.reload()} className="px-8 py-4 bg-neon text-black font-black italic rounded-none flex items-center gap-2 uppercase tracking-tighter shadow-2xl shadow-neon/20">
+            Reinicializar DNA PRO
           </button>
         </div>
       );
@@ -81,29 +83,29 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
         setUser(fbUser);
-        // Fetch profile
-        const profileDoc = await getDocs(query(collection(db, "users"), where("uid", "==", fbUser.uid)));
-        if (!profileDoc.empty) {
-          const profileData = profileDoc.docs[0].data() as UserProfile;
-          setProfile(profileData);
-          if (profileData.role === 'student' && activeTab === 'home') setActiveTab('profile');
-          setView('dashboard');
-        }
-        setLoading(false);
+        // Fetch profile with onSnapshot for real-time reactivity and better performance
+        const q = query(collection(db, "users"), where("uid", "==", fbUser.uid));
+        const unsubProfile = onSnapshot(q, (snap) => {
+          if (!snap.empty) {
+            const profileData = snap.docs[0].data() as UserProfile;
+            setProfile(profileData);
+            setView('dashboard');
+          }
+          setLoading(false);
+        }, (err) => {
+          console.error("Profile listen error:", err);
+          setLoading(false);
+        });
+        
+        return () => unsubProfile();
       } else {
-        const savedUser = localStorage.getItem('tl_current_session');
-        if (savedUser) {
-           const userObj = JSON.parse(savedUser);
-           // We'll try to reach out to DB if possible, but landing is safer if no auth
-           setLoading(false);
-        } else {
-           setTimeout(() => setLoading(false), 800);
-        }
+        localStorage.removeItem('tl_current_session');
+        setTimeout(() => setLoading(false), 500);
       }
     });
 
     return () => unsubscribe();
-  }, [activeTab]);
+  }, []); // Only run once on mount
 
   // Performance Optimization: Memoized Callbacks
   const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
@@ -140,7 +142,7 @@ export default function App() {
       }
       return false;
     } catch (err: any) {
-      if (err.code === 'auth/user-not-found') return false;
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') return false;
       console.error("Login error:", err);
       return false;
     } finally {
@@ -189,11 +191,13 @@ export default function App() {
       case 'profile': return <ProfileTab profile={profile} />;
       case 'portfolio': return <PortfolioTab profile={profile} />;
       case 'admin': return <AdminTab currentProfile={profile} />;
+      case 'ai_coach': return <AICoachTab profile={profile} />;
       case 'workouts': return <WorkoutsTab profile={profile} />;
       case 'store': return <StoreTab profile={profile} />;
       case 'financial': return <FinancialTab profile={profile} />;
       case 'consulting': return <ConsultingTab profile={profile} />;
       case 'gallery': return <GalleryTab profile={profile} />;
+      case 'educational': return <EducationalTab profile={profile} />;
       default: return <HomeTab profile={profile} onNavigate={handleTabChange} />;
     }
   }, [activeTab, profile, handleTabChange]);
@@ -205,17 +209,17 @@ export default function App() {
            <motion.div 
             animate={{ x: [-100, 100] }} 
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-amber-500 w-16" 
+            className="absolute inset-0 bg-neon w-16" 
            />
         </div>
-        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-amber-500/40 font-black animate-pulse">Sincronizando DNA</p>
+        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-neon/40 font-black animate-pulse">Sincronizando DNA PRO</p>
       </div>
     );
   }
 
   return (
     <ErrorBoundary>
-      <div className="bg-black min-h-screen text-white font-sans selection:bg-amber-500 selection:text-black antialiased">
+      <div className="bg-black min-h-screen text-white font-sans selection:bg-neon selection:text-black antialiased">
         <AnimatePresence mode="wait">
           {view === 'landing' ? (
             <motion.div key="landing-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -246,14 +250,14 @@ export default function App() {
                 onLogout={handleLogout}
                 role={profile?.role}
               />
-              <main className="container mx-auto">
-                <AnimatePresence mode="wait">
+              <main className="container mx-auto px-4">
+                <AnimatePresence mode="popLayout" initial={false}>
                   <motion.div
                     key={activeTab}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                   >
                     {currentTabContent}
                   </motion.div>

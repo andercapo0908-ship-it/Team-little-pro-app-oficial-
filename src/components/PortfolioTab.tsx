@@ -30,8 +30,8 @@ export const PortfolioTab = React.memo(({ profile }: { profile: any }) => {
 
       <div className="pt-8 mb-12 flex flex-col items-center md:items-start">
         <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase mb-4 leading-none">Coach Little</h2>
-        <div className="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full">
-          <p className="text-amber-500 font-mono tracking-[0.5em] text-[10px] uppercase font-black">Elite Head Coach & Performance Engineer</p>
+        <div className="px-6 py-2 bg-neon/10 border border-neon/20 rounded-full">
+          <p className="text-neon font-mono tracking-[0.5em] text-[10px] uppercase font-black">Elite Head Coach & Performance Engineer Team Little PRO</p>
         </div>
       </div>
 

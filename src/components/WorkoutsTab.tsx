@@ -4,6 +4,7 @@ import { Dumbbell, Plus, Trash2, Video, Search, Save, X, Play } from "lucide-rea
 import { UserProfile, Workout, Exercise } from "../types";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { ExerciseLibrary } from "./ExerciseLibrary";
 
 interface WorkoutsTabProps {
   profile: UserProfile | null;
@@ -11,6 +12,7 @@ interface WorkoutsTabProps {
 
 export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
   const isTrainerOrAdmin = profile?.role === 'trainer' || profile?.role === 'admin';
+  const [activeSubTab, setActiveSubTab] = useState<'workouts' | 'library'>('workouts');
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
@@ -19,7 +21,6 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
     if (!profile) return;
     
     // Fetch workouts based on role
-    // Trainers/Admins see templates they created or all workouts, Students see their assigned workouts
     let q;
     if (isTrainerOrAdmin) {
        q = query(collection(db, "workouts"), where("trainerId", "==", profile.uid));
@@ -29,6 +30,8 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
 
     const unsub = onSnapshot(q, (snap) => {
       setWorkouts(snap.docs.map(d => d.data() as Workout));
+    }, (err) => {
+      console.error("Workouts sync error:", err);
     });
 
     return () => unsub();
@@ -54,6 +57,7 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
 
   const handleDeleteWorkout = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if(!confirm("Deseja apagar este treino permanentemente?")) return;
     try {
        await deleteDoc(doc(db, "workouts", id));
     } catch (err) {
@@ -64,26 +68,49 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
   if (!profile) return null;
 
   return (
-    <div className="p-6 md:p-8 pb-32 max-w-6xl mx-auto space-y-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+    <div className="p-6 md:p-8 pb-32 max-w-6xl mx-auto space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">Treinos <span className="text-amber-500">& Efeitos</span></h2>
-          <p className="text-amber-500/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">
-            {isTrainerOrAdmin ? "Gestão de Prescrição" : "Metodologia Exclusiva"}
+          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">TEAM LITTLE <span className="text-neon">PRO</span></h2>
+          <p className="text-neon/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">
+            Prescrição & Performance de Elite
           </p>
         </div>
         
-        {isTrainerOrAdmin && (
+        {isTrainerOrAdmin && activeSubTab === 'workouts' && !isCreating && (
           <button 
             onClick={handleOpenCreate}
-            className="bg-amber-500 text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+            className="bg-neon text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(57,255,20,0.3)]"
           >
-            <Plus size={16} /> Novo Treino
+            <Plus size={16} /> Novo Plano
           </button>
         )}
       </div>
 
-      {!isCreating ? (
+      {!isCreating && (
+        <div className="flex gap-4 border-b border-white/5 pb-4">
+           <button 
+            onClick={() => setActiveSubTab('workouts')}
+            className={`text-[10px] uppercase font-black italic tracking-[0.2em] px-4 py-2 rounded-full transition-all ${activeSubTab === 'workouts' ? 'bg-amber-500 text-black' : 'text-slate-500 hover:text-white'}`}
+          >
+            Meus Planos
+          </button>
+          <button 
+            onClick={() => setActiveSubTab('library')}
+            className={`text-[10px] uppercase font-black italic tracking-[0.2em] px-4 py-2 rounded-full transition-all ${activeSubTab === 'library' ? 'bg-amber-500 text-black' : 'text-slate-500 hover:text-white'}`}
+          >
+            Biblioteca de Exercícios
+          </button>
+        </div>
+      )}
+
+      {isCreating ? (
+        <WorkoutEditor 
+          workout={editingWorkout!} 
+          profile={profile}
+          onClose={() => setIsCreating(false)} 
+        />
+      ) : activeSubTab === 'workouts' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {workouts.length > 0 ? workouts.map((w, i) => (
              <motion.div 
@@ -132,15 +159,12 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
           )) : (
             <div className="col-span-full py-20 text-center border border-white/5 border-dashed rounded-[3rem]">
               <Dumbbell size={48} className="mx-auto text-white/10 mb-6" />
-              <p className="text-sm font-mono uppercase tracking-widest text-slate-500">Nenhum treino disponível.</p>
+              <p className="text-sm font-mono uppercase tracking-widest text-slate-500">Nenhum plano disponível.</p>
             </div>
           )}
         </div>
       ) : (
-        <WorkoutEditor 
-          workout={editingWorkout!} 
-          onClose={() => setIsCreating(false)} 
-        />
+        <ExerciseLibrary profile={profile} />
       )}
     </div>
   );
@@ -149,10 +173,26 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
 WorkoutsTab.displayName = 'WorkoutsTab';
 
 // --- Subcomponent: Workout Editor ---
-const WorkoutEditor = ({ workout: initialWorkout, onClose }: { workout: Workout, onClose: () => void }) => {
+const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout: Workout, profile: UserProfile | null, onClose: () => void }) => {
   const [workout, setWorkout] = useState<Workout>(initialWorkout);
   const [saving, setSaving] = useState(false);
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
+
+  // Auto-save logic
+  useEffect(() => {
+    if (!workout.name) return;
+    const timer = setTimeout(async () => {
+      try {
+        await setDoc(doc(db, "workouts", workout.id), workout);
+        setLastSaved(new Date().toLocaleTimeString());
+      } catch (err) {
+        console.error("Workout auto-save err:", err);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [workout]);
 
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
@@ -212,6 +252,13 @@ const WorkoutEditor = ({ workout: initialWorkout, onClose }: { workout: Workout,
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-neutral-900 border border-white/5 rounded-[3rem] p-8 md:p-12 shadow-2xl relative">
       <button onClick={onClose} className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
       
+      <div className="flex items-center gap-2 mb-8">
+         <div className="w-2 h-2 rounded-full bg-neon animate-pulse" />
+         <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">
+            {lastSaved ? `Salvo automaticamente: ${lastSaved}` : "Sincronização Ativa"}
+         </span>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div className="space-y-2 md:col-span-1">
           <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Nome do Treino</label>
@@ -239,9 +286,14 @@ const WorkoutEditor = ({ workout: initialWorkout, onClose }: { workout: Workout,
       <div className="space-y-6 mb-12">
         <div className="flex justify-between items-center bg-black/50 p-4 border border-white/5 rounded-2xl">
           <h3 className="font-black italic uppercase tracking-tighter text-xl">Lista de Exercícios</h3>
-          <button onClick={handleAddExercise} className="text-amber-500 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:text-white transition-colors">
-            Adicionar <Plus size={16} />
-          </button>
+          <div className="flex gap-4">
+            <button onClick={() => setIsLibraryOpen(true)} className="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:text-white transition-colors">
+              Biblioteca <Search size={14} />
+            </button>
+            <button onClick={handleAddExercise} className="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:text-white transition-colors">
+              Manual <Plus size={14} />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -324,6 +376,47 @@ const WorkoutEditor = ({ workout: initialWorkout, onClose }: { workout: Workout,
              <motion.div initial={{scale: 0.95, opacity: 0}} animate={{scale: 1, opacity: 1}} exit={{scale: 0.95, opacity: 0}} className="w-full max-w-4xl aspect-video bg-black rounded-3xl overflow-hidden relative z-10 border border-white/10 shadow-2xl">
                 <button onClick={() => setPreviewVideo(null)} className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white hover:text-amber-500 z-20"><X size={20}/></button>
                 <iframe src={getEmbedUrl(previewVideo)} className="w-full h-full border-0" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Library Selection Modal */}
+      <AnimatePresence>
+        {isLibraryOpen && (
+          <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4">
+             <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setIsLibraryOpen(false)} />
+             <motion.div 
+               initial={{scale: 0.95, opacity: 0, y: 30}} 
+               animate={{scale: 1, opacity: 1, y: 0}} 
+               exit={{scale: 0.95, opacity: 0, y: 30}} 
+               className="w-full max-w-5xl h-[85vh] bg-neutral-900 rounded-[3rem] overflow-hidden relative z-10 border border-white/10 shadow-2xl flex flex-col"
+             >
+                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-black/30">
+                  <h3 className="text-3xl font-black italic uppercase tracking-tighter">Escolha do <span className="text-amber-500">Acervo</span></h3>
+                  <button onClick={() => setIsLibraryOpen(false)} className="p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20}/></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                  <ExerciseLibrary 
+                    profile={profile} 
+                    showAddButton={false} 
+                    onSelectExercise={(ex) => {
+                      setWorkout({
+                        ...workout,
+                        exercises: [...workout.exercises, { 
+                          name: ex.name, 
+                          muscleGroup: ex.muscleGroup, 
+                          videoUrl: ex.videoUrl,
+                          sets: 3, 
+                          reps: "10-12", 
+                          load: "Moderada", 
+                          rest: "60s" 
+                        }]
+                      });
+                      setIsLibraryOpen(false);
+                    }} 
+                  />
+                </div>
              </motion.div>
           </div>
         )}

@@ -36,7 +36,7 @@ export const TopBar = React.memo(({ onOpenSidebar, onLogout, onBack, canGoBack }
         ) : (
           <button 
             onClick={onOpenSidebar} 
-            className="p-2.5 hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 text-amber-500"
+            className="p-2.5 hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 text-neon"
           >
             <Menu size={24} />
           </button>
@@ -54,8 +54,9 @@ export const TopBar = React.memo(({ onOpenSidebar, onLogout, onBack, canGoBack }
           />
         </div>
         <div className="flex items-center gap-1.5 leading-none">
-          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-[#CA9B00]">TEAM</span>
+          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-neon">TEAM</span>
           <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-white">LITTLE</span>
+          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-neon">PRO</span>
         </div>
       </div>
       

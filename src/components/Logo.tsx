@@ -37,7 +37,7 @@ export const TeamLittleLogo = () => {
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-3 bg-[#CA9B00] rounded-full"
+            className="absolute w-1 h-3 bg-neon rounded-full"
             initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
             animate={{
               opacity: [0, 0.8, 0],
@@ -58,16 +58,22 @@ export const TeamLittleLogo = () => {
       {/* Main Logo Container - Larger internal size, with hugging circle */}
       <div className="z-10 relative flex items-center justify-center w-[85%] h-[85%] sm:w-[80%] sm:h-[80%]">
         {/* Glow behind */}
-        <div className="absolute inset-0 bg-[#CA9B00]/10 blur-[50px] rounded-full animate-pulse" />
+        <div className="absolute inset-0 bg-neon/10 blur-[50px] rounded-full animate-pulse" />
         
         {/* Rotating Golden Neon Circle - Hugging the true bounds */}
         <motion.div
-          className="absolute inset-[6px] rounded-full border-2 border-[#CA9B00] shadow-[0_0_15px_rgba(202,155,0,0.5),inset_0_0_15px_rgba(202,155,0,0.3)] border-t-transparent border-r-transparent z-20 pointer-events-none"
+          className="absolute inset-[6px] rounded-full border-2 border-neon shadow-[0_0_15px_rgba(57,255,20,0.5),inset_0_0_15px_rgba(57,255,20,0.3)] border-t-transparent border-r-transparent z-20 pointer-events-none"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
+        
+        <motion.div
+          className="absolute inset-[0px] rounded-full border border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2),inset_0_0_15px_rgba(255,255,255,0.1)] border-b-transparent border-l-transparent z-20 pointer-events-none"
           animate={{ rotate: 360 }}
           transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
         />
         
-        <div className="relative bg-black/40 backdrop-blur-2xl p-0 rounded-full border border-white/5 shadow-[0_0_80px_rgba(202,155,0,0.15)] flex items-center justify-center w-full h-full z-10 overflow-hidden">
+        <div className="relative bg-black/40 backdrop-blur-2xl p-0 rounded-full border border-white/5 shadow-[0_0_80px_rgba(57,255,20,0.05)] flex items-center justify-center w-full h-full z-10 overflow-hidden">
           {!imageError ? (
             <img
               src={logoUrl}
@@ -78,8 +84,8 @@ export const TeamLittleLogo = () => {
             />
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-full">
-              <Dumbbell className="text-[#CA9B00] w-20 h-20 mb-4" />
-              <Sparkles className="text-[#CA9B00] w-10 h-10 absolute animate-bounce" />
+              <Dumbbell className="text-neon w-20 h-20 mb-4" />
+              <Sparkles className="text-white w-10 h-10 absolute animate-bounce" />
             </div>
           )}
         </div>

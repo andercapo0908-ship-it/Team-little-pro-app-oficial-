@@ -49,13 +49,13 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-sm"
       >
-        <button onClick={onBack} className="mb-12 text-slate-500 font-mono text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 hover:text-amber-500 transition-colors group">
-          <div className="w-8 h-[1px] bg-slate-800 group-hover:bg-amber-500 transition-colors" />
+        <button onClick={onBack} className="mb-12 text-slate-500 font-mono text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 hover:text-neon transition-colors group">
+          <div className="w-8 h-[1px] bg-slate-800 group-hover:bg-neon transition-colors" />
           Voltar
         </button>
 
-        <div className="text-left mb-10 border-l-2 border-amber-500 pl-6">
-          <h2 className="text-4xl font-black italic tracking-tighter mb-2 uppercase">ACESSAR {role === 'trainer' ? 'TREINADOR' : 'ALUNO'}</h2>
+        <div className="text-left mb-10 border-l-2 border-neon pl-6">
+          <h2 className="text-4xl font-black italic tracking-tighter mb-2 uppercase">ACESSAR {role === 'trainer' ? 'TREINADOR' : 'ALUNO'} <span className="text-neon">PRO</span></h2>
           <p className="text-slate-500 text-[10px] uppercase tracking-widest font-mono">Digite seu nome e senha para entrar</p>
         </div>
 
@@ -66,7 +66,7 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
               type="text" 
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full bg-neutral-900 border border-white/5 rounded-none py-4 px-4 focus:border-amber-500 outline-none transition-all font-mono text-sm uppercase placeholder:text-slate-700"
+              className="w-full bg-neutral-900 border border-white/5 rounded-none py-4 px-4 focus:border-neon outline-none transition-all font-mono text-sm uppercase placeholder:text-slate-700"
               placeholder="EX: JOSE SILVA"
               disabled={loading}
             />
@@ -77,7 +77,7 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-neutral-900 border border-white/5 rounded-none py-4 px-4 focus:border-amber-500 outline-none transition-all font-mono text-sm placeholder:text-slate-700"
+              className="w-full bg-neutral-900 border border-white/5 rounded-none py-4 px-4 focus:border-neon outline-none transition-all font-mono text-sm placeholder:text-slate-700"
               placeholder="••••••••"
               disabled={loading}
             />
@@ -98,12 +98,12 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
             whileTap={{ scale: 0.99 }}
             type="submit"
             disabled={loading}
-            className={`w-full py-5 bg-amber-500 text-black font-black italic rounded-none mt-4 uppercase tracking-tighter flex items-center justify-center gap-2 ${loading ? 'opacity-50' : 'shadow-2xl shadow-amber-500/10'}`}
+            className={`w-full py-5 bg-neon text-black font-black italic rounded-none mt-4 uppercase tracking-tighter flex items-center justify-center gap-2 ${loading ? 'opacity-50' : 'shadow-2xl shadow-neon/10'}`}
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <>ENTRAR NO SISTEMA <ChevronRight size={18} /></>
+              <>ENTRAR NO DNA PRO <ChevronRight size={18} /></>
             )}
           </motion.button>
         </form>
