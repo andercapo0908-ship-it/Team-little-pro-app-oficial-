@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Filter, Plus, Trash2, Video, X, Play, Info, Dumbbell, ShieldAlert, Zap, Upload, Loader2 } from "lucide-react";
+import { Search, Filter, Plus, Trash2, Video, X, Play, Info, Dumbbell, ShieldAlert, Zap, Upload, Loader2, Edit2 } from "lucide-react";
 import { db, storage } from "../lib/firebase";
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc, orderBy } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -26,6 +26,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExerciseDifficulty | "">("");
   
   const [isAddingMode, setIsAddingMode] = useState(false);
+  const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [newExercise, setNewExercise] = useState<Partial<LibraryExercise>>({
@@ -37,6 +38,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
     description: ""
   });
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [selectedForInfo, setSelectedForInfo] = useState<LibraryExercise | null>(null);
 
   useEffect(() => {
     const q = query(collection(db, "exercises"), orderBy("name", "asc"));
@@ -51,7 +53,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
   }, []);
 
   const filteredExercises = exercises.filter(ex => {
-    const matchesSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase()) || (ex.description && ex.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesMuscle = selectedMuscle ? ex.muscleGroup === selectedMuscle : true;
     const matchesEquipment = selectedEquipment ? ex.equipment === selectedEquipment : true;
     const matchesDifficulty = selectedDifficulty ? ex.difficulty === selectedDifficulty : true;
@@ -89,21 +91,30 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
       alert("Nome e URL/Vídeo são obrigatórios!");
       return;
     }
-    const id = "ex_" + Math.random().toString(36).substr(2, 9);
+    
+    const id = editingExerciseId || "ex_" + Math.random().toString(36).substr(2, 9);
     const exerciseToSave: LibraryExercise = {
       ...newExercise as any,
       id,
-      trainerId: profile?.uid,
-      createdAt: new Date().toISOString()
+      trainerId: editingExerciseId ? exercises.find(e => e.id === editingExerciseId)?.trainerId : profile?.uid,
+      createdAt: editingExerciseId ? exercises.find(e => e.id === editingExerciseId)?.createdAt : new Date().toISOString()
     };
+
     try {
       await setDoc(doc(db, "exercises", id), exerciseToSave);
       setIsAddingMode(false);
+      setEditingExerciseId(null);
       setNewExercise({ name: "", muscleGroup: "Peitoral", equipment: "Halteres", difficulty: "Iniciante", videoUrl: "", description: "" });
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar exercício");
     }
+  };
+
+  const handleEditExercise = (ex: LibraryExercise) => {
+    setNewExercise(ex);
+    setEditingExerciseId(ex.id);
+    setIsAddingMode(true);
   };
 
   const isEmbeddable = (url: string) => {
@@ -200,15 +211,24 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center flex-wrap gap-2">
                     <h5 className="font-bold text-white uppercase text-sm tracking-tight">{ex.name}</h5>
-                    {ex.videoUrl && (
+                    <div className="flex gap-1.5 ml-auto md:ml-0">
+                      {ex.videoUrl && (
+                        <button 
+                          onClick={() => setPreviewVideo(ex.videoUrl)}
+                          className="p-1.5 bg-neon/20 text-neon rounded-lg hover:bg-neon hover:text-black transition-all group/play"
+                          title="Ver vídeo de demonstração"
+                        >
+                          <Play size={12} fill="currentColor" className="group-hover/play:scale-110 transition-transform" />
+                        </button>
+                      )}
                       <button 
-                        onClick={() => setPreviewVideo(ex.videoUrl)}
-                        className="p-1.5 bg-neon/20 text-neon rounded-lg hover:bg-neon hover:text-black transition-all group/play"
-                        title="Ver vídeo de demonstração"
+                        onClick={() => setSelectedForInfo(ex)}
+                        className="p-1.5 bg-white/5 text-slate-400 rounded-lg hover:bg-white hover:text-black transition-all"
+                        title="Ver dicas técnicas"
                       >
-                        <Play size={12} fill="currentColor" className="group-hover/play:scale-110 transition-transform" />
+                        <Info size={12} />
                       </button>
-                    )}
+                    </div>
                     <span className={`text-[8px] font-black italic px-2 py-0.5 rounded-full ${
                       ex.difficulty === 'Iniciante' ? 'bg-green-500/10 text-green-500' :
                       ex.difficulty === 'Intermediário' ? 'bg-neon/10 text-neon' :
@@ -230,7 +250,9 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                 )}
               </div>
 
-              <p className="text-xs text-slate-400 line-clamp-2 italic">"{ex.description || "Sem descrição disponível."}"</p>
+              <p className="text-xs text-slate-400 line-clamp-2 italic cursor-pointer hover:text-white transition-colors" onClick={() => setSelectedForInfo(ex)}>
+                "{ex.description || "Sem descrição disponível."}"
+              </p>
 
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                 <div className="flex items-center gap-2">
@@ -238,12 +260,22 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                    <span className="text-[9px] uppercase font-mono tracking-widest text-slate-500">Tutorial Disponível</span>
                 </div>
                 {isTrainerOrAdmin && (profile?.role === 'admin' || ex.trainerId === profile?.uid) && (
-                   <button 
-                    onClick={async () => { if(confirm("Deseja excluir este exercício da biblioteca?")) await deleteDoc(doc(db, "exercises", ex.id)); }}
-                    className="text-red-500/40 hover:text-red-500 transition-colors p-1"
-                   >
-                     <Trash2 size={14} />
-                   </button>
+                   <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleEditExercise(ex)}
+                        className="text-white/40 hover:text-neon transition-colors p-1"
+                        title="Editar"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button 
+                        onClick={async () => { if(confirm("Deseja excluir este exercício da biblioteca?")) await deleteDoc(doc(db, "exercises", ex.id)); }}
+                        className="text-red-500/40 hover:text-red-500 transition-colors p-1"
+                        title="Excluir"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                   </div>
                 )}
               </div>
             </motion.div>
@@ -265,9 +297,9 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
              <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setIsAddingMode(false)} />
              <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 20, opacity: 0}} className="w-full max-w-lg bg-neutral-900 border border-white/10 rounded-[3rem] p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/5 blur-[50px] rounded-full" />
-                <button onClick={() => { if(!uploading) setIsAddingMode(false); }} className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20}/></button>
+                <button onClick={() => { if(!uploading) { setIsAddingMode(false); setEditingExerciseId(null); } }} className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20}/></button>
                 
-                <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-8">Novo <span className="text-amber-500">Exercício</span></h3>
+                <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-8">{editingExerciseId ? 'Editar' : 'Novo'} <span className="text-amber-500">Exercício</span></h3>
                 
                 <div className="space-y-4 relative z-10">
                    <div className="space-y-1">
@@ -340,11 +372,63 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                    <button 
                     onClick={handleSaveExercise} 
                     disabled={uploading || !newExercise.name || !newExercise.videoUrl}
-                    className="w-full py-5 bg-amber-500 text-black font-black italic uppercase rounded-2xl tracking-[0.2em] flex items-center justify-center gap-3 text-lg mt-4 shadow-xl hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-5 bg-neon text-black font-black italic uppercase rounded-2xl tracking-[0.2em] flex items-center justify-center gap-3 text-lg mt-4 shadow-xl hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                    >
-                      {uploading ? "Aguarde Upload..." : "Salvar Cadastro"}
+                      {uploading ? "Aguarde Upload..." : (editingExerciseId ? "Atualizar Cadastro" : "Salvar Cadastro")}
                    </button>
                 </div>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Info Modal */}
+      <AnimatePresence>
+        {selectedForInfo && (
+          <div className="fixed inset-0 z-[1600] flex items-center justify-center p-4">
+             <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setSelectedForInfo(null)} />
+             <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 20, opacity: 0}} className="w-full max-w-lg bg-neutral-900 border border-neon/20 rounded-[3rem] p-10 relative z-10 shadow-2xl">
+                <button onClick={() => setSelectedForInfo(null)} className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20}/></button>
+                
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="p-3 bg-neon/10 rounded-2xl text-neon">
+                      <Dumbbell size={24} />
+                   </div>
+                   <div>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">Ficha Técnica</p>
+                      <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">{selectedForInfo.name}</h3>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                   <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[8px] font-mono uppercase text-slate-500 mb-1">Grupo Muscular</p>
+                      <p className="text-xs font-bold text-neon uppercase">{selectedForInfo.muscleGroup}</p>
+                   </div>
+                   <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[8px] font-mono uppercase text-slate-500 mb-1">Equipamento</p>
+                      <p className="text-xs font-bold text-white uppercase">{selectedForInfo.equipment}</p>
+                   </div>
+                </div>
+
+                <div className="space-y-4">
+                   <div className="flex items-center gap-2 text-neon">
+                      <Zap size={14} />
+                      <h4 className="text-[10px] uppercase font-black tracking-widest">Dicas Técnicas & Execução</h4>
+                   </div>
+                   <div className="bg-black/60 border border-white/5 rounded-3xl p-6 min-h-[150px]">
+                      <p className="text-sm text-slate-300 leading-relaxed italic">
+                        {selectedForInfo.description || "Este exercício ainda não possui dicas técnicas detalhadas."}
+                      </p>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={() => setSelectedForInfo(null)}
+                  className="w-full mt-8 py-4 bg-white/5 hover:bg-white text-white hover:text-black font-black italic uppercase rounded-2xl tracking-[0.2em] transition-all"
+                >
+                  Fechar
+                </button>
              </motion.div>
           </div>
         )}

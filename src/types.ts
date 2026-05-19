@@ -57,6 +57,8 @@ export interface Exercise {
   rest: string;
   muscleGroup: string;
   videoUrl?: string;
+  description?: string;
+  technicalTips?: string;
   progress?: ExerciseProgress;
 }
 
@@ -122,4 +124,5 @@ export interface EducationalContent {
   createdAt: string;
   updatedAt: string;
   tags?: string[];
+  likes?: number;
 }

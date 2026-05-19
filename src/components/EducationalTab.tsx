@@ -33,7 +33,7 @@ interface EducationalTabProps {
   profile: UserProfile | null;
 }
 
-const CATEGORIES = ['Nutrição', 'Bem-Estar', 'Técnica', 'Mentalidade', 'Recuperação', 'Suplementação'];
+const CATEGORIES = ['Nutrição', 'Bem-Estar', 'Técnica', 'Mentalidade', 'Recuperação', 'Suplementação', 'Técnicas Avançadas'];
 const CONTENT_TYPES: { id: ContentType; label: string; icon: any }[] = [
   { id: 'article', label: 'Artigos', icon: FileText },
   { id: 'video', label: 'Vídeos', icon: Video },
@@ -64,11 +64,61 @@ export const EducationalTab: React.FC<EducationalTabProps> = ({ profile }) => {
   useEffect(() => {
     const q = query(collection(db, 'content'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newItems = snapshot.docs.map(doc => ({
+      const dbItems = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as EducationalContent[];
-      setItems(newItems);
+      
+      if (dbItems.length === 0) {
+        // Fallback for demo/initial state with requested articles
+        const initialItems: EducationalContent[] = [
+          {
+            id: 'deadlift-adv',
+            title: 'Levantamento Terra: Bracing e Ativação',
+            description: 'Técnicas avançadas para um terra pesado e seguro.',
+            type: 'article',
+            category: 'Técnicas Avançadas',
+            body: 'O bracing abdominal é a chave para o levantamento terra pesado. Mantenha a pressão intra-abdominal constante e ative os latíssimos como se estivesse tentando quebrar a barra no meio...',
+            trainerId: 'seed',
+            trainerName: 'Anderson Santana',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            likes: 42,
+            tags: ['terra', 'powerlifting', 'bracing']
+          },
+          {
+            id: 'bench-adv',
+            title: 'Supino PRO: Leg Drive e Retração',
+            description: 'Como usar as pernas para aumentar sua carga no supino.',
+            type: 'article',
+            category: 'Técnicas Avançadas',
+            body: 'O supino não é apenas um exercício de empurrar. A retração escapular cria uma base sólida, e o leg drive transfere força do solo para a barra através da ponte...',
+            trainerId: 'seed',
+            trainerName: 'Anderson Santana',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            likes: 38,
+            tags: ['supino', 'peitoral', 'técnica']
+          },
+          {
+            id: 'shoulder-adv',
+            title: 'Desenvolvimento: Estabilidade Escapular',
+            description: 'Segredos para um desenvolvimento com halteres de elite.',
+            type: 'article',
+            category: 'Técnicas Avançadas',
+            body: 'No desenvolvimento com halteres, a estabilidade das escápulas e o controle da descida são vitais. Evite o excesso de arqueamento lombar e foque em empurrar os halteres em uma trajetória levemente arqueada...',
+            trainerId: 'seed',
+            trainerName: 'Anderson Santana',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            likes: 35,
+            tags: ['ombro', 'halteres', 'força']
+          }
+        ];
+        setItems(initialItems);
+      } else {
+        setItems(dbItems);
+      }
       setLoading(false);
     });
     return () => unsubscribe();

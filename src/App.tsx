@@ -10,6 +10,7 @@ import {
 import { 
   doc, 
   setDoc, 
+  getDoc,
   collection, 
   query, 
   where, 
@@ -84,10 +85,10 @@ export default function App() {
       if (fbUser) {
         setUser(fbUser);
         // Fetch profile with onSnapshot for real-time reactivity and better performance
-        const q = query(collection(db, "users"), where("uid", "==", fbUser.uid));
-        const unsubProfile = onSnapshot(q, (snap) => {
-          if (!snap.empty) {
-            const profileData = snap.docs[0].data() as UserProfile;
+        const profileRef = doc(db, "users", fbUser.uid);
+        const unsubProfile = onSnapshot(profileRef, (snap) => {
+          if (snap.exists()) {
+            const profileData = snap.data() as UserProfile;
             setProfile(profileData);
             setView('dashboard');
           }
@@ -128,21 +129,24 @@ export default function App() {
       const userCred = await signInWithEmailAndPassword(auth, email, pass);
       const fbUser = userCred.user;
       
-      const q = query(collection(db, "users"), where("uid", "==", fbUser.uid));
-      const snap = await getDocs(q);
+      const docRef = doc(db, "users", fbUser.uid);
+      const snap = await getDoc(docRef);
       
-      if (!snap.empty) {
-        const userData = snap.docs[0].data() as UserProfile;
+      if (snap.exists()) {
+        const userData = snap.data() as UserProfile;
         localStorage.setItem('tl_current_session', JSON.stringify(userData));
         setProfile(userData);
         setUser(fbUser);
         if (userData.role === 'student') setActiveTab('profile');
         setView('dashboard');
         return true;
+      } else {
+        // Logged in but no profile - maybe handle profile creation or redirect
+        signOut(auth);
+        return false;
       }
-      return false;
     } catch (err: any) {
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') return false;
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') return false;
       console.error("Login error:", err);
       return false;
     } finally {
@@ -157,13 +161,19 @@ export default function App() {
       const fbUser = userCred.user;
       
       let role: UserRole = view === 'login_student' ? 'student' : 'trainer';
+      let finalName = name;
+      
       if (email.toLowerCase() === 'andercapo0908@gmail.com') {
         role = 'admin';
+        finalName = "Anderson Santana";
+      } else if (role === 'trainer') {
+        // Only allow Anderson to be trainer for now as per request
+        role = 'student';
       }
 
       const newProfile: UserProfile = {
         uid: fbUser.uid,
-        name,
+        name: finalName,
         email,
         role,
         createdAt: new Date().toISOString()

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Activity, 
@@ -10,7 +10,11 @@ import {
   Edit2,
   X,
   Save,
-  Check
+  Check,
+  Send,
+  User,
+  Dumbbell,
+  MessageSquare
 } from "lucide-react";
 import { HealthMetrics, UserProfile } from "../types";
 import { ImageUpload } from "./ImageUpload";
@@ -33,6 +37,49 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
   
   const [isEditingMetrics, setIsEditingMetrics] = useState(false);
   const [healthData, setHealthData] = useState<HealthMetrics>(profile?.health || defaultHealth);
+
+  // Simulated Chat State
+  const [chatMessages, setChatMessages] = useState<{id: string, text: string, sender: 'student' | 'trainer', timestamp: Date}[]>([
+    { id: '1', text: 'Fala campeão! Vi que você registrou um treino pesado hoje. Como se sentiu?', sender: 'trainer', timestamp: new Date(Date.now() - 3600000) },
+    { id: '2', text: 'Eai coach! Senti que a carga no agachamento finalmente está ficando sob controle.', sender: 'student', timestamp: new Date(Date.now() - 1800000) },
+    { id: '3', text: 'Excelente. A técnica é o segredo da longevidade. Mantenha focado.', sender: 'trainer', timestamp: new Date(Date.now() - 600000) },
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    
+    const msg = {
+      id: Date.now().toString(),
+      text: newMessage,
+      sender: 'student' as const,
+      timestamp: new Date()
+    };
+    
+    setChatMessages(prev => [...prev, msg]);
+    setNewMessage('');
+    
+    // Simulating trainer auto-reply
+    setTimeout(() => {
+      const response = {
+        id: (Date.now() + 1).toString(),
+        text: "Mensagem recebida! DNA PRO em evolução. Continue firme no plano.",
+        sender: 'trainer' as const,
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, response]);
+    }, 1500);
+  };
 
   const handleSaveProfile = async () => {
     if (!tempProfile || !profile) return;
@@ -232,6 +279,69 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
                    </div>
                  ))}
               </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Simulated Chat Section */}
+      <div className="space-y-8">
+        <div className="flex justify-between items-center ml-4">
+          <h3 className="text-[11px] font-mono uppercase tracking-[0.6em] text-slate-500 font-black flex items-center gap-2">
+            <MessageSquare size={14} className="text-neon" /> Suporte Direto PRO
+          </h3>
+          <span className="text-[9px] font-mono text-neon animate-pulse uppercase font-black">Coach Online</span>
+        </div>
+
+        <div className="bg-neutral-900 border border-white/5 rounded-[4rem] h-[500px] flex flex-col overflow-hidden shadow-2xl relative">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar scroll-smooth">
+            {chatMessages.map((msg) => (
+              <motion.div 
+                key={msg.id}
+                initial={{ opacity: 0, x: msg.sender === 'student' ? 20 : -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className={`flex items-end gap-3 ${msg.sender === 'student' ? 'flex-row-reverse' : 'flex-row'}`}
+              >
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                  msg.sender === 'trainer' ? 'bg-neon/10 text-neon' : 'bg-white/5 text-slate-400'
+                }`}>
+                  {msg.sender === 'trainer' ? <Dumbbell size={18} /> : <User size={18} />}
+                </div>
+                <div className={`max-w-[70%] p-5 rounded-3xl text-sm font-medium ${
+                  msg.sender === 'student' 
+                  ? 'bg-neon text-black rounded-br-none' 
+                  : 'bg-black/50 border border-white/5 text-slate-200 rounded-bl-none'
+                }`}>
+                  {msg.text}
+                  <p className={`text-[8px] mt-2 opacity-40 font-mono ${msg.sender === 'student' ? 'text-black' : 'text-slate-400'}`}>
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <form onSubmit={handleSendMessage} className="p-6 md:p-10 bg-black/40 border-t border-white/5 flex gap-4">
+             <input 
+               type="text" 
+               value={newMessage}
+               onChange={(e) => setNewMessage(e.target.value)}
+               placeholder="Pergunte algo ao Coach Little..."
+               className="flex-1 bg-neutral-900 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-neon transition-all"
+             />
+             <button 
+               type="submit"
+               className="bg-neon text-black p-4 rounded-2xl hover:bg-white transition-all shadow-xl shadow-neon/10"
+             >
+               <Send size={20} />
+             </button>
+          </form>
+
+          {/* Background decoration */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none">
+             <Dumbbell size={300} className="text-white" />
           </div>
         </div>
       </div>

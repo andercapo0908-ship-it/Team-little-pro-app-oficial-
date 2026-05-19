@@ -30,7 +30,8 @@ interface SidebarProps {
 export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, onLogout, role }: SidebarProps) => {
   const menuItems = [
     { id: 'home', label: 'Estatísticas PRO', icon: LayoutDashboard },
-    { id: 'profile', label: role === 'student' ? 'Meu Perfil' : 'Alunos do Team', icon: role === 'student' ? UserIcon : Users },
+    { id: 'profile', label: 'Meu Perfil', icon: UserIcon },
+    ...(role === 'student' ? [] : [{ id: 'admin', label: 'Meus Alunos', icon: Users }]),
     { id: 'workouts', label: 'Fichas de Performance', icon: Dumbbell },
     { id: 'ai_coach', label: 'Personal Inteligente', icon: BrainCircuit },
     { id: 'portfolio', label: 'Nosso Team', icon: Award },
@@ -43,7 +44,7 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
 
   // Add Admin Tab if role is admin
   if (role === 'admin') {
-    menuItems.push({ id: 'admin', label: 'Painel Adm', icon: ShieldCheck });
+    menuItems.push({ id: 'admin', label: 'Painel Personal', icon: ShieldCheck });
   }
 
   return (

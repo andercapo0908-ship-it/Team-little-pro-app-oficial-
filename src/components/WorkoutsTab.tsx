@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Dumbbell, Plus, Trash2, Video, Search, Save, X, Play } from "lucide-react";
+import { Dumbbell, Plus, Trash2, Video, Search, Save, X, Play, Info } from "lucide-react";
 import { UserProfile, Workout, Exercise } from "../types";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
@@ -45,7 +45,7 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
   const handleOpenCreate = () => {
     setEditingWorkout({
       id: "wk_" + Math.random().toString(36).substr(2, 9),
-      studentId: "global", // Or specific student ID
+      studentId: "global_temp", // Force selection
       trainerId: profile?.uid || "",
       name: "",
       division: "A",
@@ -175,14 +175,24 @@ WorkoutsTab.displayName = 'WorkoutsTab';
 // --- Subcomponent: Workout Editor ---
 const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout: Workout, profile: UserProfile | null, onClose: () => void }) => {
   const [workout, setWorkout] = useState<Workout>(initialWorkout);
+  const [students, setStudents] = useState<UserProfile[]>([]);
   const [saving, setSaving] = useState(false);
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
 
+  useEffect(() => {
+    // Fetch students list for selector
+    const q = query(collection(db, "users"), where("role", "==", "student"));
+    const unsub = onSnapshot(q, (snap) => {
+      setStudents(snap.docs.map(d => d.data() as UserProfile));
+    });
+    return () => unsub();
+  }, []);
+
   // Auto-save logic
   useEffect(() => {
-    if (!workout.name) return;
+    if (!workout.name || workout.studentId === "global_temp") return;
     const timer = setTimeout(async () => {
       try {
         await setDoc(doc(db, "workouts", workout.id), workout);
@@ -236,6 +246,10 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
       alert("Dê um nome ao treino!");
       return;
     }
+    if (workout.studentId === "global_temp") {
+      alert("Selecione um aluno para este treino!");
+      return;
+    }
     setSaving(true);
     try {
       await setDoc(doc(db, "workouts", workout.id), workout);
@@ -259,7 +273,21 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
          </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div className="space-y-2 md:col-span-1">
+          <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Selecionar Aluno</label>
+          <select 
+            value={workout.studentId} 
+            onChange={e => setWorkout({...workout, studentId: e.target.value})}
+            className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 font-bold uppercase tracking-tight"
+          >
+             <option value="global_temp">Escolha um Atleta...</option>
+             <option value="global">Todos (Público)</option>
+             {students.map(s => (
+               <option key={s.uid} value={s.uid}>{s.name}</option>
+             ))}
+          </select>
+        </div>
         <div className="space-y-2 md:col-span-1">
           <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Nome do Treino</label>
           <input 
@@ -342,15 +370,27 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
                 </select>
               </div>
 
-              <div className="md:col-span-12 space-y-2 mt-2">
-                <label className="text-[9px] font-mono text-amber-500/50 uppercase flex items-center gap-1"><Video size={10} /> URL Vídeo (Opcional)</label>
-                <div className="flex gap-2 items-center">
-                  <input type="text" value={ex.videoUrl || ''} onChange={e => handleUpdateExercise(i, 'videoUrl', e.target.value)} className="w-full bg-transparent border-b border-white/10 pb-2 text-sm font-mono text-white outline-none focus:border-amber-500" placeholder="https://..." />
-                  {ex.videoUrl && (
-                    <button onClick={() => setPreviewVideo(ex.videoUrl!)} className="p-2 bg-amber-500/10 text-amber-500 rounded-lg hover:bg-amber-500 hover:text-black transition-colors shrink-0" title="Testar Vídeo">
-                      <Play size={14} fill="currentColor" />
-                    </button>
-                  )}
+              <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-mono text-amber-500/50 uppercase flex items-center gap-1"><Video size={10} /> URL Vídeo (Opcional)</label>
+                  <div className="flex gap-2 items-center">
+                    <input type="text" value={ex.videoUrl || ''} onChange={e => handleUpdateExercise(i, 'videoUrl', e.target.value)} className="w-full bg-transparent border-b border-white/10 pb-2 text-sm font-mono text-white outline-none focus:border-amber-500" placeholder="https://..." />
+                    {ex.videoUrl && (
+                      <button onClick={() => setPreviewVideo(ex.videoUrl!)} className="p-2 bg-amber-500/10 text-amber-500 rounded-lg hover:bg-amber-500 hover:text-black transition-colors shrink-0" title="Testar Vídeo">
+                        <Play size={14} fill="currentColor" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-mono text-amber-500/50 uppercase flex items-center gap-1"><Info size={10} /> Dicas Técnicas / Observações</label>
+                  <textarea 
+                    value={ex.description || ''} 
+                    onChange={e => handleUpdateExercise(i, 'description', e.target.value)} 
+                    rows={1}
+                    className="w-full bg-transparent border-b border-white/10 pb-1 text-sm text-slate-300 outline-none focus:border-amber-500 italic" 
+                    placeholder="Ex: Escápulas retraídas, cadência 4020..."
+                  />
                 </div>
               </div>
             </div>
@@ -407,6 +447,7 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
                           name: ex.name, 
                           muscleGroup: ex.muscleGroup, 
                           videoUrl: ex.videoUrl,
+                          description: ex.description,
                           sets: 3, 
                           reps: "10-12", 
                           load: "Moderada", 

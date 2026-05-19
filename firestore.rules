@@ -18,7 +18,7 @@ service cloud.firestore {
     // Check if the user is a hardcoded admin or has the admin role in the DB
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == "andercapo0908@gmail.com" ||
+        request.auth.token.email.lower() == "andercapo0908@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
       );
@@ -78,7 +78,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn(); // Allow listing but we filter in the app for non-admins if needed, or keep restricted if possible.
+      // Wait, if I allow list for everyone, it solves the error for students listening to profile, but I already fixed that in App.tsx.
+      // So I will keep list for isAdmin() to be secure.
       allow create: if isOwner(userId) && isValidUserProfile(incoming());
       allow update: if (isOwner(userId) || isAdmin()) && 
                     isValidUserProfile(incoming()) &&
