@@ -14,14 +14,17 @@ import {
 } from "lucide-react";
 import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, query, where } from "firebase/firestore";
-import { UserProfile, AppSettings } from "../types";
+import { UserProfile, AppSettings, CheckinEntry } from "../types";
 import { ImageUpload } from "./ImageUpload";
+import { FirestoreService } from "../lib/firestoreService";
 
 export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | null }) => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activeMenu, setActiveMenu] = useState<'users' | 'settings'>('users');
+  const [activeSubTab, setActiveSubTab] = useState<'Perfil' | 'Treinos' | 'Avaliações' | 'Chat'>('Perfil');
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [checkins, setCheckins] = useState<CheckinEntry[]>([]);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -53,9 +56,14 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
       console.error("Admin Settings sync error:", err);
     });
 
+    const unsubCheckins = FirestoreService.subscribeToCheckins((data) => {
+        setCheckins(data);
+    });
+
     return () => {
       unsubUsers();
       unsubSettings();
+      unsubCheckins();
     };
   }, []);
 
@@ -162,7 +170,12 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-xl font-black italic uppercase tracking-widest text-slate-400 ml-4">Alunos do Team</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-black italic uppercase tracking-widest text-slate-400 ml-4">Alunos do Team</h3>
+                <div className="bg-neutral-900 px-4 py-2 rounded-xl text-orange-pure text-[10px] font-black uppercase font-mono tracking-widest">
+                    {checkins.length} Check-ins Recentes
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {users.filter(u => u.role === 'student').map(u => (
                   <div key={u.uid} className="bg-neutral-900 border border-white/5 rounded-[2.5rem] p-6 hover:border-neon transition-all group overflow-hidden relative shadow-2xl">
@@ -247,53 +260,86 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                     >
                        <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-8">Editar Atleta</h3>
                        
-                       <form onSubmit={handleUpdateUser} className="space-y-8">
-                          <ImageUpload 
-                            label="Foto de Perfil"
-                            currentImage={editingUser.photoURL}
-                            onImageAction={(b64) => setEditingUser({...editingUser, photoURL: b64})}
-                          />
+                       <div className="flex gap-2 mb-8 border-b border-white/5 pb-4">
+                          {['Perfil', 'Treinos', 'Avaliações', 'Chat'].map(tab => (
+                            <button
+                              key={tab}
+                              onClick={() => setActiveSubTab(tab as any)}
+                              className={`px-4 py-2 text-[10px] uppercase font-black rounded-lg transition-all ${
+                                activeSubTab === tab ? 'bg-orange-pure text-black' : 'text-slate-500 hover:text-white'
+                              }`}
+                            >
+                              {tab}
+                            </button>
+                          ))}
+                       </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Nome Completo</label>
-                                <input 
-                                  value={editingUser.name}
-                                  onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
-                                  className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 font-bold uppercase"
-                                />
-                             </div>
-                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Cargo / Role</label>
-                                <select 
-                                  value={editingUser.role}
-                                  onChange={(e) => setEditingUser({...editingUser, role: e.target.value as any})}
-                                  className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 font-bold uppercase"
-                                >
-                                   <option value="student">Aluno</option>
-                                   <option value="trainer">Personal</option>
-                                   <option value="admin">Admin</option>
-                                </select>
-                             </div>
-                          </div>
+                       {activeSubTab === 'Perfil' && (
+                        <form onSubmit={handleUpdateUser} className="space-y-8">
+                           <ImageUpload 
+                             label="Foto de Perfil"
+                             currentImage={editingUser.photoURL}
+                             onImageAction={(b64) => setEditingUser({...editingUser, photoURL: b64})}
+                           />
 
-                          <div className="pt-6 border-t border-white/5 flex gap-4">
-                             <button 
-                               type="button"
-                               onClick={() => setEditingUser(null)}
-                               className="flex-1 py-4 bg-white/5 text-slate-400 font-black italic uppercase rounded-2xl tracking-tighter"
-                             >
-                               Cancelar
-                             </button>
-                             <button 
-                               type="submit"
-                               disabled={saving}
-                               className="flex-1 py-4 bg-amber-500 text-black font-black italic uppercase rounded-2xl tracking-tighter flex items-center justify-center gap-2"
-                             >
-                               {saving ? "Salvando..." : <>Salvar Alterações <Save size={18} /></>}
-                             </button>
-                          </div>
-                       </form>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-2">
+                                 <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Nome Completo</label>
+                                 <input 
+                                   value={editingUser.name}
+                                   onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                                   className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 font-bold uppercase"
+                                 />
+                              </div>
+                              <div className="space-y-2">
+                                 <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Cargo / Role</label>
+                                 <select 
+                                   value={editingUser.role}
+                                   onChange={(e) => setEditingUser({...editingUser, role: e.target.value as any})}
+                                   className="w-full bg-black border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 font-bold uppercase"
+                                 >
+                                    <option value="student">Aluno</option>
+                                    <option value="trainer">Personal</option>
+                                    <option value="admin">Admin</option>
+                                 </select>
+                              </div>
+                           </div>
+
+                           <div className="pt-6 border-t border-white/5 flex gap-4">
+                              <button 
+                                type="button"
+                                onClick={() => setEditingUser(null)}
+                                className="flex-1 py-4 bg-white/5 text-slate-400 font-black italic uppercase rounded-2xl tracking-tighter"
+                              >
+                                Cancelar
+                              </button>
+                              <button 
+                                type="submit"
+                                disabled={saving}
+                                className="flex-1 py-4 bg-amber-500 text-black font-black italic uppercase rounded-2xl tracking-tighter flex items-center justify-center gap-2"
+                              >
+                                {saving ? "Salvando..." : <>Salvar Alterações <Save size={18} /></>}
+                              </button>
+                           </div>
+                        </form>
+                       )}
+                       {activeSubTab === 'Treinos' && (
+                         <div className="space-y-4">
+                            <button className="w-full py-4 border-2 border-dashed border-orange-pure text-orange-pure rounded-2xl font-black italic uppercase">
+                              + Adicionar Novo Treino
+                            </button>
+                            <p className="text-slate-500 font-mono text-center text-xs">Nenhum treino ativo.</p>
+                         </div>
+                       )}
+                       {activeSubTab === 'Avaliações' && (
+                         <div className="space-y-4">
+                            <button className="w-full py-4 border-2 border-dashed border-orange-pure text-orange-pure rounded-2xl font-black italic uppercase">
+                              + Adicionar Nova Avaliação
+                            </button>
+                            <p className="text-slate-500 font-mono text-center text-xs">Nenhuma avaliação registrada.</p>
+                         </div>
+                       )}
+                       {activeSubTab === 'Chat' && <div className="text-slate-500 font-mono text-sm">Funcionalidade de Chat em Breve.</div>}
                     </motion.div>
                  </div>
                )}

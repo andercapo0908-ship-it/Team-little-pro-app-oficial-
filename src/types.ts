@@ -126,3 +126,29 @@ export interface EducationalContent {
   tags?: string[];
   likes?: number;
 }
+
+export interface Evaluation {
+  id: string;
+  studentId: string;
+  trainerId: string;
+  date: string;
+  weight: number;
+  bodyFat?: number;
+  photos?: string[];
+  notes: string;
+}
+
+export interface Message {
+  id: string;
+  chatId: string;
+  senderId: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface CheckinEntry {
+  id: string;
+  studentId: string;
+  timestamp: string;
+  deviceInfo?: string;
+}

@@ -46,10 +46,18 @@ export const FirestoreService = {
     return await addDoc(collection(db, "workouts"), workout);
   },
 
-  subscribeToWorkouts(studentId: string, callback: (workouts: Workout[]) => void) {
-    const q = query(collection(db, "workouts"), where("studentId", "==", studentId));
+  // --- Checkins ---
+  async logCheckin(studentId: string) {
+    return await addDoc(collection(db, "checkins"), {
+      studentId,
+      timestamp: serverTimestamp()
+    });
+  },
+  
+  subscribeToCheckins(callback: (checkins: CheckinEntry[]) => void) {
+    const q = query(collection(db, "checkins"));
     return onSnapshot(q, (snapshot) => {
-      callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Workout)));
+      callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as CheckinEntry)));
     });
   }
 };

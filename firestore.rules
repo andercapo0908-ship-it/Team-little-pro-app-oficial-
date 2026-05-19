@@ -1,11 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 0. Default Deny Catch-all
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     // --- Helpers ---
     function isSignedIn() {
       return request.auth != null;
@@ -78,10 +73,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn(); // Allow listing but we filter in the app for non-admins if needed, or keep restricted if possible.
-      // Wait, if I allow list for everyone, it solves the error for students listening to profile, but I already fixed that in App.tsx.
-      // So I will keep list for isAdmin() to be secure.
+      allow read: if isSignedIn();
       allow create: if isOwner(userId) && isValidUserProfile(incoming());
       allow update: if (isOwner(userId) || isAdmin()) && 
                     isValidUserProfile(incoming()) &&
@@ -128,6 +120,11 @@ service cloud.firestore {
       allow create: if isSignedIn();
       allow update: if isAdmin() || isTrainer() || resource.data.studentId == request.auth.uid;
       allow delete: if isAdmin() || isTrainer() || resource.data.studentId == request.auth.uid;
+    }
+
+    match /checkins/{checkinId} {
+      allow read: if isTrainer();
+      allow create: if isSignedIn();
     }
 
     // Legacy/Test path

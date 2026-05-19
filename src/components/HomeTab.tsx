@@ -4,6 +4,7 @@ import { Bell, MessageCircle, CalendarCheck, ChevronRight } from "lucide-react";
 import { db } from "../lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import { AppSettings, UserProfile } from "../types";
+import { FirestoreService } from "../lib/firestoreService";
 
 export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfile | null, onNavigate?: (tab: string) => void }) => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -16,9 +17,14 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
     return () => unsub();
   }, []);
 
-  const handleCheckIn = () => {
-    setCheckedIn(true);
-    // In a real scenario, this would save to Firestore with the current date.
+  const handleCheckIn = async () => {
+    if (!profile) return;
+    try {
+      await FirestoreService.logCheckin(profile.uid);
+      setCheckedIn(true);
+    } catch (err) {
+      console.error("Check-in error:", err);
+    }
   };
 
   return (

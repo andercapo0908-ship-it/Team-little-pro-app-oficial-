@@ -76,6 +76,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
 
@@ -90,11 +91,15 @@ export default function App() {
           if (snap.exists()) {
             const profileData = snap.data() as UserProfile;
             setProfile(profileData);
+            setError(null);
             setView('dashboard');
+          } else {
+            setError("Perfil não encontrado no sistema. Por favor, verifique se seu cadastro foi concluído.");
           }
           setLoading(false);
         }, (err) => {
           console.error("Profile listen error:", err);
+          setError(`Erro de Permissão: ${err.message}. Verifique seu acesso.`);
           setLoading(false);
         });
         
@@ -214,15 +219,42 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-white text-center">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-cream-vivid text-center">
         <div className="w-16 h-[1px] bg-neutral-800 relative overflow-hidden">
            <motion.div 
             animate={{ x: [-100, 100] }} 
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-neon w-16" 
+            className="absolute inset-0 bg-orange-pure w-16" 
            />
         </div>
-        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-neon/40 font-black animate-pulse">Sincronizando DNA PRO</p>
+        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-orange-pure/40 font-black animate-pulse">Sincronizando DNA PRO</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-cream-vivid text-center">
+        <div className="w-20 h-20 rounded-full border-2 border-orange-pure/20 flex items-center justify-center mb-8">
+          <Dumbbell className="text-orange-pure animate-bounce" size={40} />
+        </div>
+        <h2 className="text-orange-pure font-black italic text-3xl uppercase mb-4 tracking-tighter">Erro de Acesso</h2>
+        <p className="text-slate-400 font-mono text-[10px] uppercase tracking-[0.2em] mb-10 max-w-xs leading-relaxed">{error}</p>
+        <div className="flex flex-col gap-4 w-full max-w-xs">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="w-full py-5 bg-orange-pure text-black font-black italic uppercase tracking-tighter shadow-[0_10px_30px_rgba(255,102,0,0.3)]"
+          >
+            Tentar Novamente
+          </button>
+          <button 
+            onClick={handleLogout} 
+            className="w-full py-5 bg-transparent text-slate-500 font-black italic uppercase tracking-tighter border border-white/5 hover:border-orange-pure/20 transition-all"
+          >
+            Sair e Trocar Conta
+          </button>
+        </div>
+        <p className="mt-12 text-[8px] text-slate-700 font-mono uppercase tracking-widest">Team Little Performance v2.0</p>
       </div>
     );
   }
