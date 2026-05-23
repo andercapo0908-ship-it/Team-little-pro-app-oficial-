@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { auth, db } from "./lib/firebase";
 import { 
   onAuthStateChanged, 
@@ -310,7 +311,7 @@ export default function App() {
           ) : null}
         </AnimatePresence>
       </div>
+      <Analytics />
     </ErrorBoundary>
   );
 }
-rpn.insrall
