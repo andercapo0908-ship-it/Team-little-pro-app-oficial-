@@ -28,7 +28,7 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const isAdmin = currentProfile?.role === 'admin' || currentProfile?.email === 'andercapo0908@gmail.com';
+  const isAdmin = currentProfile?.role === 'admin' || currentProfile?.role === 'trainer' || currentProfile?.email === 'andercapo0908@gmail.com';
 
   useEffect(() => {
     // Listen for all users

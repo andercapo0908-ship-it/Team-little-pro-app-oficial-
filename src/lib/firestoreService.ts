@@ -12,7 +12,7 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { UserProfile, StudentData, Workout } from "../types";
+import { UserProfile, StudentData, Workout, CheckinEntry } from "../types";
 
 export const FirestoreService = {
   // --- Users ---

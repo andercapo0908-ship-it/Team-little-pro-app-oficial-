@@ -19,66 +19,37 @@ export const TeamLittleLogo = () => {
 
   return (
     <motion.div 
-      className="relative flex items-center justify-center w-80 h-80 sm:w-[22rem] sm:h-[22rem] md:w-[26rem] md:h-[26rem]"
-      initial={{ scale: 0.8, opacity: 0 }}
+      className="relative flex items-center justify-center w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64"
+      initial={{ scale: 0.5, opacity: 0, rotate: -180 }}
       animate={{ 
         scale: 1, 
         opacity: 1,
-        y: [0, -10, 0],
+        rotate: 0,
       }}
       transition={{ 
-        y: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-        opacity: { duration: 1 },
+        duration: 1.2,
+        ease: "easeOut",
         scale: { type: "spring", damping: 15 }
       }}
     >
-      {/* Sparks coming from inside - Subtle & Professional */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-3 bg-neon rounded-full"
-            initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-            animate={{
-              opacity: [0, 0.8, 0],
-              scale: [0, 1.2, 0],
-              x: (Math.random() - 0.5) * 320,
-              y: (Math.random() - 0.5) * 320,
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              delay: i * 0.25,
-              ease: "easeOut",
-            }}
-          />
-        ))}
-      </div>
-
       {/* Main Logo Container - Larger internal size, with hugging circle */}
-      <div className="z-10 relative flex items-center justify-center w-[85%] h-[85%] sm:w-[80%] sm:h-[80%]">
+      <div className="z-10 relative flex items-center justify-center w-[90%] h-[90%] sm:w-[85%] sm:h-[85%]">
         {/* Glow behind */}
-        <div className="absolute inset-0 bg-neon/10 blur-[50px] rounded-full animate-pulse" />
+        <div className="absolute inset-0 bg-neon/10 blur-[40px] rounded-full" />
         
-        {/* Rotating Golden Neon Circle - Hugging the true bounds */}
+        {/* Rotating Golden Arc */}
         <motion.div
-          className="absolute inset-[6px] rounded-full border-2 border-neon shadow-[0_0_15px_rgba(57,255,20,0.5),inset_0_0_15px_rgba(57,255,20,0.3)] border-t-transparent border-r-transparent z-20 pointer-events-none"
-          animate={{ rotate: -360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-        />
-        
-        <motion.div
-          className="absolute inset-[0px] rounded-full border border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2),inset_0_0_15px_rgba(255,255,255,0.1)] border-b-transparent border-l-transparent z-20 pointer-events-none"
+          className="absolute inset-[-6px] rounded-full border-[3px] border-amber-500/10 border-t-amber-500 border-r-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] z-20 pointer-events-none"
           animate={{ rotate: 360 }}
-          transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
         />
-        
+
         <div className="relative bg-black/40 backdrop-blur-2xl p-0 rounded-full border border-white/5 shadow-[0_0_80px_rgba(57,255,20,0.05)] flex items-center justify-center w-full h-full z-10 overflow-hidden">
           {!imageError ? (
             <img
               src={logoUrl}
               alt="TEAM LITTLE PRO Logo"
-              className="w-full h-full object-cover scale-[1.15]"
+              className="w-full h-full object-cover scale-[1.12]"
               referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
             />

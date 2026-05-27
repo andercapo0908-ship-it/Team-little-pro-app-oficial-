@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Activity, 
@@ -14,12 +14,23 @@ import {
   Send,
   User,
   Dumbbell,
-  MessageSquare
+  MessageSquare,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { HealthMetrics, UserProfile } from "../types";
 import { ImageUpload } from "./ImageUpload";
 import { db } from "../lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, query, where, orderBy, onSnapshot, addDoc, deleteDoc } from "firebase/firestore";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from "recharts";
 
 export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -37,6 +48,109 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
   
   const [isEditingMetrics, setIsEditingMetrics] = useState(false);
   const [healthData, setHealthData] = useState<HealthMetrics>(profile?.health || defaultHealth);
+
+  // Synchronized Evaluations History (Firestore + Fallback)
+  const [evaluations, setEvaluations] = useState<any[]>([]);
+  const [loadingEvals, setLoadingEvals] = useState(true);
+  const [isAddingEval, setIsAddingEval] = useState(false);
+  const [newEvalWeight, setNewEvalWeight] = useState("");
+  const [newEvalBF, setNewEvalBF] = useState("");
+  const [newEvalDate, setNewEvalDate] = useState(new Date().toISOString().split('T')[0]);
+  const [chartMetric, setChartMetric] = useState<'both' | 'weight' | 'bf'>('both');
+
+  // Load user evaluations dynamically from Firestore
+  useEffect(() => {
+    if (!profile?.uid) return;
+    const q = query(
+      collection(db, "evaluations"),
+      where("studentId", "==", profile.uid),
+      orderBy("date", "asc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setEvaluations(list);
+      setLoadingEvals(false);
+    }, (err) => {
+      console.error("Error loading evaluations:", err);
+      setLoadingEvals(false);
+    });
+    return () => unsub();
+  }, [profile?.uid]);
+
+  // Handle adding new metrics to Firestore
+  const handleCreateEval = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile?.uid) return;
+    const w = parseFloat(newEvalWeight);
+    const bf = parseFloat(newEvalBF);
+    if (isNaN(w) || w <= 0) {
+      alert("Por favor, digite um peso válido.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await addDoc(collection(db, "evaluations"), {
+        studentId: profile.uid,
+        trainerId: "admin",
+        date: newEvalDate,
+        weight: w,
+        bodyFat: isNaN(bf) ? 0 : bf,
+        notes: "Métrica registrada pelo Atleta"
+      });
+      setIsAddingEval(false);
+      setNewEvalWeight("");
+      setNewEvalBF("");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar métrica de evolução.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Memoized Chart data combination (Real or Simulated Fallback)
+  const chartData = useMemo(() => {
+    if (evaluations.length > 0) {
+      return evaluations.map(e => ({
+        date: e.date,
+        weight: parseFloat(e.weight) || 0,
+        bf: parseFloat(e.bodyFat) || 0,
+        formattedDate: new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        isReal: true,
+      }));
+    }
+    const currentW = parseFloat(String(healthData.weight)) || 82.5;
+    const currentBf = parseFloat(String(healthData.bf)) || 14.5;
+    return [
+      { date: "2026-04-19", weight: Number((currentW - 2.5).toFixed(1)), bf: Number((currentBf + 1.2).toFixed(1)), formattedDate: "19/04", isReal: false },
+      { date: "2026-04-26", weight: Number((currentW - 1.8).toFixed(1)), bf: Number((currentBf + 0.8).toFixed(1)), formattedDate: "26/04", isReal: false },
+      { date: "2026-05-03", weight: Number((currentW - 1.0).toFixed(1)), bf: Number((currentBf + 0.4).toFixed(1)), formattedDate: "03/05", isReal: false },
+      { date: "2026-05-10", weight: Number((currentW - 0.4).toFixed(1)), bf: Number((currentBf + 0.1).toFixed(1)), formattedDate: "10/05", isReal: false },
+      { date: "Hoje", weight: currentW, bf: currentBf, formattedDate: "Hoje", isReal: false },
+    ];
+  }, [evaluations, healthData.weight, healthData.bf]);
+
+  // Tooltip component custom styled for high aesthetic feel
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-neutral-950 border border-white/10 p-5 rounded-[1.5rem] shadow-2xl backdrop-blur-md">
+          <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">{label}</p>
+          <div className="space-y-1.5 animate-fade-in">
+            {payload.map((pld: any) => (
+              <div key={pld.name} className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pld.color }} />
+                <p className="font-black italic text-sm text-[#FFFDF5]">
+                  {pld.name === 'weight' ? 'Peso' : 'Gordura'}: <span className="font-sans font-normal text-slate-300">{pld.value}{pld.name === 'weight' ? ' kg' : ' %'}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Simulated Chat State
   const [chatMessages, setChatMessages] = useState<{id: string, text: string, sender: 'student' | 'trainer', timestamp: Date}[]>([
@@ -233,6 +347,238 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
           ))}
         </div>
       </div>
+
+      {/* Modern High-Performance Dynamic Chart Segment */}
+      <motion.div 
+        initial={{ opacity: 0, y: 40, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="bg-neutral-900 border border-white/5 p-8 md:p-10 rounded-[3.5rem] shadow-2xl space-y-8 relative overflow-hidden"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+          <div>
+            <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-neon font-black">Performance Tracking</span>
+            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#FFFDF5] mt-1">Evolução de Composição</h3>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Metric Tab Controls */}
+            <div className="bg-black/40 border border-white/5 p-1 rounded-xl flex">
+              {[
+                { label: 'Ambos', val: 'both' },
+                { label: 'Peso', val: 'weight' },
+                { label: 'Gordura', val: 'bf' }
+              ].map((tab) => (
+                <button
+                  key={tab.val}
+                  onClick={() => setChartMetric(tab.val as any)}
+                  className={`px-4 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-wider font-bold transition-all ${
+                    chartMetric === tab.val 
+                      ? 'bg-neon text-black font-black italic' 
+                      : 'text-slate-500 hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setIsAddingEval(!isAddingEval)}
+              className="bg-neon/10 border border-neon/20 hover:bg-neon hover:text-black text-neon font-black italic text-[9px] tracking-widest uppercase px-4 py-3 rounded-xl transition-all flex items-center gap-2"
+            >
+              {isAddingEval ? <X size={12} /> : <Plus size={12} />} Novo Registro
+            </button>
+          </div>
+        </div>
+
+        {/* Adding Metric Collapsible Form */}
+        <AnimatePresence>
+          {isAddingEval && (
+            <motion.form 
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: "auto", marginTop: 20 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              onSubmit={handleCreateEval}
+              className="bg-black/40 border border-white/5 rounded-3xl p-6 md:p-8 space-y-6 overflow-hidden relative"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Peso Corporal (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    required
+                    placeholder="Ex: 82.5"
+                    value={newEvalWeight}
+                    onChange={(e) => setNewEvalWeight(e.target.value)}
+                    className="w-full bg-neutral-900 border border-white/5 rounded-2xl py-3 px-5 text-white outline-none focus:border-neon font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Gordura Corporal (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    placeholder="Ex: 14.2"
+                    value={newEvalBF}
+                    onChange={(e) => setNewEvalBF(e.target.value)}
+                    className="w-full bg-neutral-900 border border-white/5 rounded-2xl py-3 px-5 text-white outline-none focus:border-neon font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Data da Medição</label>
+                  <input
+                    type="date"
+                    required
+                    value={newEvalDate}
+                    onChange={(e) => setNewEvalDate(e.target.value)}
+                    className="w-full bg-neutral-900 border border-white/5 rounded-2xl py-3 px-5 text-white outline-none focus:border-neon font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingEval(false)}
+                  className="px-5 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-500 hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-neon text-black px-6 py-3 rounded-xl text-[10px] font-black italic tracking-widest uppercase flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-neon/10"
+                >
+                  {saving ? "Salvando..." : "Gravar Métrica"}
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+
+        {/* Recharts Area Container */}
+        <div className="h-80 md:h-[350px] w-full bg-black/30 rounded-3xl p-4 border border-white/5 relative flex items-center justify-center">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-neon)" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="var(--color-neon)" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorBF" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-yellow-pure)" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="var(--color-yellow-pure)" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+              <XAxis 
+                dataKey="formattedDate" 
+                stroke="#8B8B7A" 
+                tickLine={false} 
+                axisLine={false}
+                style={{ fontSize: '9px', fontFamily: 'monospace', letterSpacing: '0.1em' }} 
+              />
+              
+              {chartMetric !== 'bf' && (
+                <YAxis 
+                  yAxisId="weight" 
+                  stroke="var(--color-neon)" 
+                  tickLine={false} 
+                  axisLine={false}
+                  domain={['dataMin - 2', 'dataMax + 2']}
+                  style={{ fontSize: '9px', fontFamily: 'monospace' }} 
+                  unit="kg"
+                />
+              )}
+              {chartMetric !== 'weight' && (
+                <YAxis 
+                  yAxisId="bf" 
+                  orientation="right" 
+                  stroke="var(--color-yellow-pure)" 
+                  tickLine={false} 
+                  axisLine={false}
+                  domain={['dataMin - 1.5', 'dataMax + 1.5']}
+                  style={{ fontSize: '9px', fontFamily: 'monospace' }} 
+                  unit="%"
+                />
+              )}
+              
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#222', strokeWidth: 1 }} />
+              
+              {chartMetric !== 'bf' && (
+                <Area 
+                  yAxisId="weight" 
+                  type="monotone" 
+                  dataKey="weight" 
+                  stroke="var(--color-neon)" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorWeight)" 
+                  name="weight"
+                />
+              )}
+              {chartMetric !== 'weight' && (
+                <Area 
+                  yAxisId="bf" 
+                  type="monotone" 
+                  dataKey="bf" 
+                  stroke="var(--color-yellow-pure)" 
+                  strokeWidth={2.5}
+                  fillOpacity={1} 
+                  fill="url(#colorBF)" 
+                  name="bf"
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Recorded Real entries manager */}
+        {evaluations.length > 0 ? (
+          <div className="pt-6 border-t border-white/5 space-y-4">
+            <h4 className="text-[10px] font-mono uppercase tracking-[0.4em] text-slate-500">Histórico de Registros Real</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {evaluations.map((ev) => (
+                <div key={ev.id} className="flex justify-between items-center bg-black/40 border border-white/5 py-4 px-5 rounded-2xl hover:border-neon/30 transition-all">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                      {new Date(ev.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                    </p>
+                    <div className="flex gap-4">
+                      <p className="text-[#FFFDF5] font-black italic text-sm">Peso: <span className="text-neon">{ev.weight}kg</span></p>
+                      {ev.bodyFat !== undefined && (
+                        <p className="text-[#FFFDF5] font-black italic text-sm">BF: <span className="text-amber-500">{ev.bodyFat}%</span></p>
+                      )}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        await deleteDoc(doc(db, "evaluations", ev.id));
+                      } catch (err) {
+                        console.error(err);
+                        alert("Erro ao excluir registro.");
+                      }
+                    }}
+                    className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-black rounded-xl transition-all"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-center font-mono text-[9px] uppercase tracking-widest text-[#8B8B7A] leading-relaxed pt-2">
+            💡 Exibindo projeção estimativa. Registre suas métricas acima para começar seu acompanhamento dinâmico fidedigno.
+          </p>
+        )}
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         <div className="space-y-8">

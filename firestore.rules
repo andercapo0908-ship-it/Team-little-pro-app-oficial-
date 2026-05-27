@@ -127,6 +127,13 @@ service cloud.firestore {
       allow create: if isSignedIn();
     }
 
+    match /evaluations/{evaluationId} {
+      allow read: if isSignedIn() && (isOwner(resource.data.studentId) || isTrainer() || isAdmin());
+      allow create: if isTrainer() || isAdmin();
+      allow update: if isTrainer() || isAdmin();
+      allow delete: if isTrainer() || isAdmin();
+    }
+
     // Legacy/Test path
     match /test/{docId} {
       allow read: if true;

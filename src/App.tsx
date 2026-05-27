@@ -82,35 +82,66 @@ export default function App() {
 
   // Initialization
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    let activeUnsub: (() => void) | null = null;
+
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      if (activeUnsub) {
+        activeUnsub();
+        activeUnsub = null;
+      }
+
       if (fbUser) {
         setUser(fbUser);
         // Fetch profile with onSnapshot for real-time reactivity and better performance
         const profileRef = doc(db, "users", fbUser.uid);
-        const unsubProfile = onSnapshot(profileRef, (snap) => {
-          if (snap.exists()) {
-            const profileData = snap.data() as UserProfile;
-            setProfile(profileData);
-            setError(null);
-            setView('dashboard');
-          } else {
-            setError("Perfil não encontrado no sistema. Por favor, verifique se seu cadastro foi concluído.");
-          }
-          setLoading(false);
-        }, (err) => {
-          console.error("Profile listen error:", err);
-          setError(`Erro de Permissão: ${err.message}. Verifique seu acesso.`);
-          setLoading(false);
-        });
         
-        return () => unsubProfile();
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        const startListening = () => {
+          if (activeUnsub) {
+            activeUnsub();
+          }
+          activeUnsub = onSnapshot(profileRef, (snap) => {
+            if (snap.exists()) {
+              const profileData = snap.data() as UserProfile;
+              setProfile(profileData);
+              setError(null);
+              setView('dashboard');
+            } else {
+              setError("Perfil não encontrado no sistema. Por favor, verifique se seu cadastro foi concluído.");
+            }
+            setLoading(false);
+          }, (err) => {
+            if (err.message.toLowerCase().includes("permission") && retryCount < maxRetries) {
+              retryCount++;
+              console.warn(`Profile listen permission timing issue, retrying (${retryCount}/${maxRetries}) in ${retryCount * 250}ms...`);
+              setTimeout(() => {
+                if (auth.currentUser) {
+                  startListening();
+                }
+              }, retryCount * 250);
+            } else {
+              console.error("Profile listen error:", err);
+              setError(`Erro de Permissão: ${err.message}. Verifique seu acesso.`);
+              setLoading(false);
+            }
+          });
+        };
+
+        startListening();
       } else {
         localStorage.removeItem('tl_current_session');
         setTimeout(() => setLoading(false), 500);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (activeUnsub) {
+        activeUnsub();
+      }
+    };
   }, []); // Only run once on mount
 
   // Performance Optimization: Memoized Callbacks
@@ -313,4 +344,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-rpn.insrall

@@ -31,7 +31,6 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
   const menuItems = [
     { id: 'home', label: 'Estatísticas PRO', icon: LayoutDashboard },
     { id: 'profile', label: 'Meu Perfil', icon: UserIcon },
-    ...(role === 'student' ? [] : [{ id: 'admin', label: 'Meus Alunos', icon: Users }]),
     { id: 'workouts', label: 'Fichas de Performance', icon: Dumbbell },
     { id: 'ai_coach', label: 'Personal Inteligente', icon: BrainCircuit },
     { id: 'portfolio', label: 'Nosso Team', icon: Award },
@@ -42,9 +41,8 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
     { id: 'consulting', label: 'Consultoria Premium', icon: MessageSquare },
   ];
 
-  // Add Admin Tab if role is admin
-  if (role === 'admin') {
-    menuItems.push({ id: 'admin', label: 'Painel Personal', icon: ShieldCheck });
+  if (role === 'admin' || role === 'trainer') {
+    menuItems.splice(2, 0, { id: 'admin', label: 'Painel do Personal', icon: ShieldCheck });
   }
 
   return (
