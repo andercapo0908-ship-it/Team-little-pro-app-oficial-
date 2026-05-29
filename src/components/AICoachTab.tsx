@@ -17,10 +17,7 @@ import {
   Brain
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { GoogleGenAI } from "@google/genai";
 import { UserProfile } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -48,35 +45,22 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
     if (!input.trim() || loading) return;
 
     const userMsg = input.trim();
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    const updatedMessages = [...messages, { role: 'user' as const, content: userMsg }];
+    setMessages(updatedMessages);
     setInput("");
     setLoading(true);
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: userMsg }]
-          }
-        ],
-        config: {
-          systemInstruction: `Você é o "Coach Little Pro AI", o assistente virtual inteligente e ultra-motivado do TEAM LITTLE PRO.
-          Seu tom é: Energético, Profissional, Direto e levemente "hardcore" (estilo musculação de alta performance).
-          Sua missão é:
-          1. Sanar dúvidas técnicas sobre exercícios, biomecânica e nutrição.
-          2. Motivar o atleta em momentos de desânimo.
-          3. Sugerir ajustes baseados na filosofia Little Pro: Constância e Foco.
-          
-          Perceba que você está falando com ${profile?.name || "um atleta"} do time.
-          Mantenha as respostas concisas, use emojis de academia e termine sempre com um grito de motivação curto como "FOCO!", "PRA CIMA!" ou "NO LIMITS!".
-          Sempre fale em Português do Brasil.
-          Se perguntarem sobre pagamentos ou problemas técnicos graves, peça para falarem com o coach humano no WhatsApp.`
-        }
+      const response = await fetch("/api/gemini/coach-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: updatedMessages, profile }),
       });
-
-      const aiText = response.text || "Desculpe, tive um lapso de memória nos meus circuitos. Vamos de novo?";
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const aiText = data.text || "Desculpe, tive um lapso de memória nos meus circuitos. Vamos de novo?";
       setMessages(prev => [...prev, { role: 'assistant', content: aiText }]);
     } catch (err) {
       console.error(err);
