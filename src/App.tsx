@@ -58,9 +58,9 @@ class ErrorBoundary extends React.Component<any, any> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center text-white">
-          <h1 className="text-2xl font-bold text-neon mb-4 uppercase italic">Falha Crítica de Sistema</h1>
+          <h1 className="text-2xl font-bold text-amber-500 mb-4 uppercase italic">Falha Crítica de Sistema</h1>
           <p className="text-slate-500 mb-6 font-mono text-xs uppercase tracking-widest">{this.state.error?.message || "Erro desconhecido"}</p>
-          <button onClick={() => window.location.reload()} className="px-8 py-4 bg-neon text-black font-black italic rounded-none flex items-center gap-2 uppercase tracking-tighter shadow-2xl shadow-neon/20">
+          <button onClick={() => window.location.reload()} className="px-8 py-4 bg-amber-500 text-black font-black italic rounded-lg flex items-center gap-2 uppercase tracking-tighter shadow-2xl shadow-amber-500/20">
             Reinicializar DNA PRO
           </button>
         </div>
@@ -202,9 +202,6 @@ export default function App() {
       if (email.toLowerCase() === 'andercapo0908@gmail.com') {
         role = 'admin';
         finalName = "Anderson Santana";
-      } else if (role === 'trainer') {
-        // Only allow Anderson to be trainer for now as per request
-        role = 'student';
       }
 
       const newProfile: UserProfile = {
@@ -292,7 +289,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="bg-black min-h-screen text-white font-sans selection:bg-neon selection:text-black antialiased">
+      <div className="bg-black min-h-screen text-white font-sans selection:bg-amber-500 selection:text-black antialiased">
         <AnimatePresence mode="wait">
           {view === 'landing' ? (
             <motion.div key="landing-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -335,6 +332,21 @@ export default function App() {
                     {currentTabContent}
                   </motion.div>
                 </AnimatePresence>
+
+                {/* Silver Elegant Footer */}
+                <footer className="mt-16 pb-12 pt-6 border-t border-white/5 text-center flex flex-col items-center justify-center space-y-2">
+                  <span className="text-[11px] tracking-[0.2em] font-black uppercase text-neutral-200 font-sans">
+                    team little pro app oficial
+                  </span>
+                  <div className="w-10 h-[10px] flex items-center justify-center">
+                    <div className="w-4 h-[1px] bg-white/20" />
+                    <div className="w-1 h-1 rounded-full bg-white/30 mx-1" />
+                    <div className="w-4 h-[1px] bg-white/20" />
+                  </div>
+                  <span className="text-[9px] tracking-[0.25em] font-bold text-slate-300 uppercase font-mono">
+                    DESENVOLVIDO POR ANDERSON DUENDE
+                  </span>
+                </footer>
               </main>
               <BottomNavigationBar activeTab={activeTab} onTabChange={handleTabChange} role={profile?.role} />
             </motion.div>

@@ -21,7 +21,8 @@ import {
   Palette,
   Truck,
   Upload,
-  Loader2
+  Loader2,
+  Edit2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { UserProfile, Product, CartItem } from "../types";
@@ -47,6 +48,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
   
   // Admin Mode
   const [isAddingMode, setIsAddingMode] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: "",
@@ -128,13 +130,14 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
   const saveProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.imageUrl) return;
     try {
-      const id = "prod_" + Math.random().toString(36).substr(2, 9);
+      const id = editingProductId || "prod_" + Math.random().toString(36).substr(2, 9);
       await setDoc(doc(db, "products", id), {
         ...newProduct,
         id,
-        createdAt: new Date().toISOString()
-      });
+        createdAt: newProduct.createdAt || new Date().toISOString()
+      }, { merge: true });
       setIsAddingMode(false);
+      setEditingProductId(null);
       setNewProduct({ name: "", description: "", price: 0, promoPrice: 0, imageUrl: "", sizes: [], colors: [], category: "Roupas", stock: 10, whatsappNumber: "5511999999999", pixKey: "seu-pix@exemplo.com" });
     } catch (err) { console.error(err); }
   };
@@ -150,8 +153,8 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">THE <span className="text-neon">SHOP PRO</span></h2>
-          <p className="text-neon/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Equipamento de Elite Team Little</p>
+          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">THE <span className="text-amber-500">SHOP PRO</span></h2>
+          <p className="text-amber-500/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Equipamento de Elite Team Little</p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -162,16 +165,16 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
               placeholder="Buscar..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-black border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm w-48 md:w-64 outline-none focus:border-neon"
+              className="bg-black border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm w-48 md:w-64 outline-none focus:border-amber-500"
             />
           </div>
           <button 
             onClick={() => setIsCartOpen(true)}
-            className="relative p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-neon hover:text-black transition-all"
+            className="relative p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-amber-500 hover:text-black transition-all"
           >
             <ShoppingCart size={20} />
             {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-neon text-black text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-amber-500 text-black text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center">
                 {cart.reduce((a, b) => a + b.quantity, 0)}
               </span>
             )}
@@ -179,7 +182,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
           {isTrainerOrAdmin && (
             <button 
               onClick={() => setIsAddingMode(true)}
-              className="bg-neon text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-neon/20"
+              className="bg-amber-500 text-white px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
             >
               <Plus size={14} /> Novo Item
             </button>
@@ -193,12 +196,40 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
           <motion.div 
             key={prod.id}
             layout
-            className="bg-neutral-900/50 border border-white/5 rounded-3xl overflow-hidden group hover:border-neon/30 transition-all flex flex-col"
+            className="bg-neutral-900/50 border border-white/5 rounded-3xl overflow-hidden group hover:border-amber-500/30 transition-all flex flex-col"
           >
             <div className="aspect-[4/5] relative overflow-hidden bg-black">
               <img src={prod.imageUrl} alt={prod.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               {prod.promoPrice && (
-                <div className="absolute top-4 left-4 bg-neon text-black text-[10px] font-black uppercase italic px-3 py-1 rounded-full">Oferta</div>
+                <div className="absolute top-4 left-4 bg-amber-500 text-black text-[10px] font-black uppercase italic px-3 py-1 rounded-full">Oferta</div>
+              )}
+              {isTrainerOrAdmin && (
+                <div className="absolute top-4 right-4 flex gap-2 z-20">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setNewProduct(prod);
+                      setEditingProductId(prod.id);
+                      setIsAddingMode(true);
+                    }}
+                    className="p-2 bg-neutral-900/80 hover:bg-amber-500 hover:text-black text-white rounded-xl border border-white/10 transition-all shadow-md"
+                    title="Editar"
+                  >
+                    <Edit2 size={12} />
+                  </button>
+                  <button 
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (confirm("Deseja realmente excluir este produto do catálogo?")) {
+                        await deleteDoc(doc(db, "products", prod.id));
+                      }
+                    }}
+                    className="p-2 bg-neutral-900/80 hover:bg-red-500 hover:text-white text-red-500 rounded-xl border border-white/10 transition-all shadow-md"
+                    title="Excluir"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
               <button 
@@ -211,7 +242,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
               <div className="p-6 space-y-2">
                 <div className="flex justify-between items-start">
                   <span className="text-[9px] uppercase font-mono tracking-widest text-slate-500">{prod.category}</span>
-                  {prod.unit && <span className="text-[9px] uppercase font-mono tracking-widest text-neon">{prod.unit}</span>}
+                  {prod.unit && <span className="text-[9px] uppercase font-mono tracking-widest text-amber-500">{prod.unit}</span>}
                 </div>
                 <h3 className="font-bold text-lg uppercase tracking-tight">{prod.name}</h3>
               <div className="flex items-center gap-3">
@@ -247,7 +278,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
              <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
              <motion.div initial={{x: "100%"}} animate={{x: 0}} exit={{x: "100%"}} className="w-full max-w-md bg-neutral-900 h-full relative z-10 border-l border-white/10 flex flex-col">
                 <div className="p-8 border-b border-white/5 flex justify-between items-center">
-                  <h3 className="text-2xl font-black italic uppercase italic text-white flex items-center gap-2">Seu <span className="text-neon">Carrinho PRO</span></h3>
+                  <h3 className="text-2xl font-black italic uppercase italic text-white flex items-center gap-2">Seu <span className="text-amber-500">Carrinho PRO</span></h3>
                   <button onClick={() => { setIsCartOpen(false); setCheckoutStep('cart'); }} className="p-2 hover:bg-white/10 rounded-full text-white"><X size={24}/></button>
                 </div>
 
@@ -256,7 +287,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
                     cart.length > 0 ? cart.map((item, idx) => (
                       <div key={idx} className="flex gap-4 group">
                         <div className="w-20 h-24 bg-black rounded-2xl overflow-hidden shrink-0">
-                          <img src={item.imageUrl} className="w-full h-full object-cover" />
+                           <img src={item.imageUrl} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex justify-between items-start">
@@ -283,21 +314,21 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
                   ) : (
                     <div className="space-y-8">
                        <div className="bg-black/50 border border-white/5 rounded-3xl p-8 text-center space-y-6">
-                          <div className="w-20 h-20 bg-neon/10 rounded-full flex items-center justify-center mx-auto">
-                            <QrCode size={40} className="text-neon" />
+                          <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
+                            <QrCode size={40} className="text-amber-500" />
                           </div>
                           <div className="space-y-2">
                             <h4 className="text-xl font-black italic uppercase text-white">Pagamento via PIX PRO</h4>
                             <p className="text-xs text-slate-400">Escaneie o QR Code ou copie a chave abaixo</p>
                           </div>
-                          <div className="aspect-square w-48 mx-auto bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(57,255,20,0.2)]">
+                          <div className="aspect-square w-48 mx-auto bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.2)]">
                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(cart[0]?.pixKey || "PIX_KEY")}`} className="w-full h-full" />
                           </div>
                           <button 
                             onClick={copyPix}
-                            className="w-full bg-white/5 border border-white/10 hover:border-neon/50 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all"
+                            className="w-full bg-white/5 border border-white/10 hover:border-amber-500/50 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all"
                           >
-                            {copied ? <Check size={18} className="text-neon" /> : <Copy size={18} className="text-slate-400" />}
+                            {copied ? <Check size={18} className="text-amber-500" /> : <Copy size={18} className="text-slate-400" />}
                             <span className="text-xs font-bold uppercase tracking-widest text-white">{copied ? "Copiado!" : "Copiar Chave PIX"}</span>
                           </button>
                        </div>
@@ -331,7 +362,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
                    {checkoutStep === 'cart' && cart.length > 0 && (
                      <button 
                       onClick={() => setCheckoutStep('payment')}
-                      className="w-full bg-neon text-black py-5 rounded-2xl font-black italic uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-neon/20"
+                      className="w-full bg-amber-500 text-white py-5 rounded-2xl font-black italic uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
                      >
                        Gerar PIX PRO <ArrowRight size={20} />
                      </button>
@@ -354,7 +385,11 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
       <AnimatePresence>
         {isAddingMode && (
           <ProductEditor 
-            onClose={() => setIsAddingMode(false)}
+            onClose={() => {
+              setIsAddingMode(false);
+              setEditingProductId(null);
+              setNewProduct({ name: "", description: "", price: 0, promoPrice: 0, imageUrl: "", sizes: [], colors: [], category: "Roupas", stock: 10, whatsappNumber: "5511999999999", pixKey: "seu-pix@exemplo.com" });
+            }}
             onSave={saveProduct}
             newProduct={newProduct}
             setNewProduct={setNewProduct}
@@ -434,14 +469,14 @@ const ProductCard = ({ product, onClose, onAdd }: { product: Product, onClose: (
 
                 <div className="grid grid-cols-2 gap-4">
                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5 flex items-center gap-3">
-                      <Truck size={20} className="text-neon" />
+                      <Truck size={20} className="text-amber-500" />
                       <div>
                         <p className="text-[10px] font-black uppercase text-white tracking-widest">Entrega Rápida</p>
                         <p className="text-[9px] text-slate-500 uppercase">Em mãos ou Correios</p>
                       </div>
                    </div>
                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5 flex items-center gap-3">
-                      <Package size={20} className="text-neon" />
+                      <Package size={20} className="text-amber-500" />
                       <div>
                         <p className="text-[10px] font-black uppercase text-white tracking-widest">Estoque Restrito</p>
                         <p className="text-[9px] text-slate-500 uppercase">Apenas {product.stock} un.</p>

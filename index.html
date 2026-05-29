@@ -1,11 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>TEAM LITTLE PRO</title>
+    
+    <!-- PWA Web Manifest & Capabilities -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#f59e0b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TEAM LITTLE" />
+    
+    <!-- Luxury Golden Icon Configs -->
+    <link rel="apple-touch-icon" href="/app_icon.png" />
+    <link rel="icon" type="image/png" href="/app_icon.png" />
+    
+    <!-- Meta tags for high performance -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="description" content="Aplicativo premium de alta performance para personal trainers e alunos do Team Little." />
   </head>
-  <body>
+  <body class="bg-black select-none overflow-x-hidden">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

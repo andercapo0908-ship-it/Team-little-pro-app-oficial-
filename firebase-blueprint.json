@@ -117,6 +117,21 @@
         "date": { "type": "string", "format": "date-time" },
         "likes": { "type": "number" }
       }
+    },
+    "AppNotification": {
+      "title": "Notification",
+      "description": "Alertas e notificações para os alunos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "type": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "title", "message", "read", "createdAt"]
     }
   },
   "firestore": {
@@ -147,6 +162,10 @@
     "/transformations/{transformationId}": {
       "schema": "TransformationPost",
       "description": "Galeria de transformações"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "AppNotification",
+      "description": "Notificações dos atletas"
     }
   }
 }

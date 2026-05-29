@@ -10,13 +10,17 @@ interface TopBarProps {
   canGoBack?: boolean;
 }
 
+const ORIGINAL_LOGO = "https://i.ibb.co/qYQQb0H1/file-00000000a510720e9e72df18c9f018c8.png";
+
 export const TopBar = React.memo(({ onOpenSidebar, onLogout, onBack, canGoBack }: TopBarProps) => {
-  const [logoUrl, setLogoUrl] = useState("https://i.ibb.co/qYQQb0H1/file-00000000a510720e9e72df18c9f018c8.png");
+  const [logoUrl, setLogoUrl] = useState(ORIGINAL_LOGO);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "config", "app"), (snap) => {
       if (snap.exists() && snap.data().logoUrl) {
         setLogoUrl(snap.data().logoUrl);
+      } else {
+        setLogoUrl(ORIGINAL_LOGO);
       }
     });
     return () => unsub();
@@ -36,7 +40,7 @@ export const TopBar = React.memo(({ onOpenSidebar, onLogout, onBack, canGoBack }
         ) : (
           <button 
             onClick={onOpenSidebar} 
-            className="p-2.5 hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 text-neon"
+            className="p-2.5 hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 text-amber-500"
           >
             <Menu size={24} />
           </button>
@@ -54,9 +58,9 @@ export const TopBar = React.memo(({ onOpenSidebar, onLogout, onBack, canGoBack }
           />
         </div>
         <div className="flex items-center gap-1.5 leading-none">
-          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-neon">TEAM</span>
+          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-amber-500">TEAM</span>
           <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-white">LITTLE</span>
-          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-neon">PRO</span>
+          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-[#FFFDF5]">PRO</span>
         </div>
       </div>
       

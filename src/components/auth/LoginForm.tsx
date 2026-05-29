@@ -43,41 +43,45 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-white text-center">
+    <div className="min-h-screen bg-premium-black flex flex-col items-center justify-center p-6 text-white text-center">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-sm"
       >
-        <button onClick={onBack} className="mb-12 text-slate-500 font-mono text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 hover:text-neon transition-colors group">
-          <div className="w-8 h-[1px] bg-slate-800 group-hover:bg-neon transition-colors" />
+        <button onClick={onBack} className="mb-12 text-silver font-mono text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 hover:text-gold transition-colors group cursor-pointer">
+          <div className="w-8 h-[1px] bg-slate-800 group-hover:bg-gold transition-colors" />
           Voltar
         </button>
 
-        <div className="text-left mb-10 border-l-2 border-neon pl-6">
-          <h2 className="text-4xl font-black italic tracking-tighter mb-2 uppercase">ACESSAR {role === 'trainer' ? 'TREINADOR' : 'ALUNO'} <span className="text-neon">PRO</span></h2>
-          <p className="text-slate-500 text-[10px] uppercase tracking-widest font-mono">Digite seu nome e senha para entrar</p>
+        <div className="text-left mb-10 border-l-2 border-gold pl-6">
+          <h2 className="text-4xl font-black italic tracking-tighter mb-2 uppercase select-none leading-none">
+            <span className="text-stroke-black">ACESSAR </span> 
+            <span className="text-stroke-black">{role === 'trainer' ? 'TREINADOR' : 'ALUNO'}</span> 
+            <span className="text-gold ml-2">PRO</span>
+          </h2>
+          <p className="text-silver text-[10px] uppercase tracking-widest font-mono">Digite seu nome e senha para entrar</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 text-left">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-[0.2em] font-mono text-slate-500 ml-1">Usuário / Nome</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] font-mono text-silver ml-1">Usuário / Nome</label>
             <input 
               type="text" 
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full bg-neutral-900 border border-white/5 rounded-none py-4 px-4 focus:border-neon outline-none transition-all font-mono text-sm uppercase placeholder:text-slate-700"
+              className="w-full bg-neutral-900/60 border border-white/5 rounded-xl py-4 px-4 focus:border-gold outline-none transition-all font-mono text-sm uppercase placeholder:text-slate-700"
               placeholder="EX: JOSE SILVA"
               disabled={loading}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-[0.2em] font-mono text-slate-500 ml-1">Senha de Acesso</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] font-mono text-silver ml-1">Senha de Acesso</label>
             <input 
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-neutral-900 border border-white/5 rounded-none py-4 px-4 focus:border-neon outline-none transition-all font-mono text-sm placeholder:text-slate-700"
+              className="w-full bg-neutral-900/60 border border-white/5 rounded-xl py-4 px-4 focus:border-gold outline-none transition-all font-mono text-sm placeholder:text-slate-700"
               placeholder="••••••••"
               disabled={loading}
             />
@@ -87,30 +91,40 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
             <motion.p 
               initial={{ opacity: 0, x: -10 }} 
               animate={{ opacity: 1, x: 0 }} 
-              className="text-red-500 text-[10px] uppercase font-mono tracking-wider bg-red-500/10 p-3 border-l-2 border-red-500"
+              className="text-red-500 text-[10px] uppercase font-mono tracking-wider bg-red-500/10 p-3 border-l-2 border-red-500 rounded-r-xl"
             >
               {error}
             </motion.p>
           )}
 
           <motion.button
-            whileHover={{ scale: 1.01 }}
+            whileHover={{ scale: 1.01, boxShadow: "0 0 20px rgba(212,175,55,0.3)" }}
             whileTap={{ scale: 0.99 }}
             type="submit"
             disabled={loading}
-            className={`w-full py-5 bg-neon text-black font-black italic rounded-none mt-4 uppercase tracking-tighter flex items-center justify-center gap-2 ${loading ? 'opacity-50' : 'shadow-2xl shadow-neon/10'}`}
+            className={`w-full py-5 bg-gold text-premium-black font-black italic rounded-xl mt-4 uppercase tracking-tighter flex items-center justify-center gap-2 shimmer-btn-effect cursor-pointer ${loading ? 'opacity-50' : 'shadow-2xl shadow-gold/10'}`}
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-premium-black border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <>ENTRAR NO DNA PRO <ChevronRight size={18} /></>
             )}
           </motion.button>
         </form>
 
-        <p className="mt-12 text-[9px] text-slate-600 font-mono uppercase tracking-[0.2em]">
+        <p className="mt-12 text-[9px] text-slate-500 font-mono uppercase tracking-[0.2em]">
           O acesso será criado automaticamente no primeiro login.
         </p>
+
+        {/* Footer */}
+        <div className="mt-12 text-center flex flex-col items-center justify-center space-y-1">
+          <span className="text-[10px] tracking-[0.2em] font-black uppercase text-neutral-200 font-sans">
+            team little pro app oficial
+          </span>
+          <span className="text-[8px] tracking-[0.25em] font-bold text-silver uppercase font-mono">
+            DESENVOLVIDO POR ANDERSON DUENDE
+          </span>
+        </div>
       </motion.div>
     </div>
   );

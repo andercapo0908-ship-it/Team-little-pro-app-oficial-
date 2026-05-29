@@ -13,6 +13,27 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Explicit PWA routes to ensure correct mime-types and prevent SPA HTML fallback redirects
+  app.get("/manifest.json", (req, res) => {
+    const isProd = process.env.NODE_ENV === "production";
+    const filePath = path.join(process.cwd(), isProd ? 'dist' : 'public', 'manifest.json');
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.sendFile(filePath);
+  });
+
+  app.get("/sw.js", (req, res) => {
+    const isProd = process.env.NODE_ENV === "production";
+    const filePath = path.join(process.cwd(), isProd ? 'dist' : 'public', 'sw.js');
+    res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+    res.sendFile(filePath);
+  });
+
+  app.get("/app_icon.png", (req, res) => {
+    const isProd = process.env.NODE_ENV === "production";
+    const filePath = path.join(process.cwd(), isProd ? 'dist' : 'public', 'app_icon.png');
+    res.sendFile(filePath);
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

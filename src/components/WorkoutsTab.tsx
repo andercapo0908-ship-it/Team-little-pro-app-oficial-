@@ -71,8 +71,8 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
     <div className="p-6 md:p-8 pb-32 max-w-6xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">TEAM LITTLE <span className="text-neon">PRO</span></h2>
-          <p className="text-neon/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">
+          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">TEAM LITTLE <span className="text-amber-500">PRO</span></h2>
+          <p className="text-amber-500/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">
             Prescrição & Performance de Elite
           </p>
         </div>
@@ -80,7 +80,7 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
         {isTrainerOrAdmin && activeSubTab === 'workouts' && !isCreating && (
           <button 
             onClick={handleOpenCreate}
-            className="bg-neon text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(57,255,20,0.3)]"
+            className="bg-amber-500 text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] shimmer-btn-effect"
           >
             <Plus size={16} /> Novo Plano
           </button>
@@ -253,6 +253,23 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
     setSaving(true);
     try {
       await setDoc(doc(db, "workouts", workout.id), workout);
+      
+      try {
+        const notificationId = `notif_${Date.now()}_${workout.studentId}`;
+        const notificationData = {
+          id: notificationId,
+          studentId: workout.studentId,
+          title: "Treino Atualizado 🏋️‍♂️",
+          message: `Seu treino "${workout.name}" (${workout.division}) foi atualizado pelo Coach. Acesse a aba Treinos para ver os detalhes.`,
+          read: false,
+          type: "workout_update",
+          createdAt: new Date().toISOString()
+        };
+        await setDoc(doc(db, "notifications", notificationId), notificationData);
+      } catch (notifErr) {
+        console.error("Failed to write notification:", notifErr);
+      }
+
       onClose();
     } catch (err) {
       console.error(err);
@@ -267,7 +284,7 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
       <button onClick={onClose} className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
       
       <div className="flex items-center gap-2 mb-8">
-         <div className="w-2 h-2 rounded-full bg-neon animate-pulse" />
+         <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
          <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">
             {lastSaved ? `Salvo automaticamente: ${lastSaved}` : "Sincronização Ativa"}
          </span>
@@ -404,7 +421,7 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
         </div>
       </div>
 
-      <button disabled={saving} onClick={handleSave} className="w-full py-5 bg-amber-500 text-black font-black italic uppercase rounded-2xl tracking-[0.2em] flex items-center justify-center gap-3 text-lg shadow-[0_0_30px_rgba(245,158,11,0.2)] hover:shadow-none transition-all">
+      <button disabled={saving} onClick={handleSave} className="w-full py-5 bg-amber-500 text-black font-black italic uppercase rounded-2xl tracking-[0.2em] flex items-center justify-center gap-3 text-lg shadow-[0_0_30px_rgba(245,158,11,0.2)] hover:shadow-none transition-all shimmer-btn-effect">
         {saving ? "Salvando..." : <>Salvar Prescrição <Save size={20} /></>}
       </button>
 

@@ -152,3 +152,13 @@ export interface CheckinEntry {
   timestamp: string;
   deviceInfo?: string;
 }
+
+export interface AppNotification {
+  id: string;
+  studentId: string;
+  title: string;
+  message: string;
+  read: boolean;
+  type: string;
+  createdAt: string;
+}

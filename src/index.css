@@ -3,26 +3,31 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-orange-pure: #FF6600;
-  --color-yellow-pure: #FFCC00;
+  --color-gold: #D4AF37;
+  --color-silver: #C0C0C0;
+  --color-premium-black: #050505;
+  --color-premium-card: #121212;
+  --color-orange-pure: #D4AF37; /* Map orange to premium gold */
+  --color-yellow-pure: #D4AF37; /* Map yellow to premium gold */
   --color-cream-vivid: #FFFDF5;
-  --color-sunset-start: #FF4D00;
-  --color-sunset-end: #FFB800;
+  --color-sunset-start: #D4AF37; /* Map sunset to gold metallic */
+  --color-sunset-end: #C0C0C0;   /* Map sunset end to silver metallic */
   
   /* Map legacy classes to new theme for instant update */
-  --color-neon: var(--color-orange-pure);
-  --color-amber-500: var(--color-yellow-pure);
+  --color-neon: var(--color-gold);
+  --color-amber-500: var(--color-gold);
   --color-white: var(--color-cream-vivid);
-  --color-slate-400: #A5A58D;
-  --color-slate-500: #8B8B7A;
+  --color-slate-400: #C0C0C0; /* Map slate-400 to silver */
+  --color-slate-500: #8E8E8E;
 }
 
 :root {
-  background-color: #000;
+  background-color: #050505;
   color: #FFFDF5;
   color-scheme: dark;
-  --orange: #FF6600;
-  --yellow: #FFCC00;
+  --gold: #D4AF37;
+  --silver: #C0C0C0;
+  --premium-black: #050505;
   --cream: #FFFDF5;
 }
 
@@ -31,6 +36,29 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #FFFDF5;
+  background-color: #050505;
+}
+
+/* Letras brancas com contorno preto */
+.text-stroke-black {
+  color: #FFFFFF !important;
+  -webkit-text-stroke: 1.5px #000000;
+  text-shadow: 
+    -1.5px -1.5px 0 #000,  
+     1.5px -1.5px 0 #000,
+    -1.5px  1.5px 0 #000,
+     1.5px  1.5px 0 #000,
+     0px 4px 10px rgba(0,0,0,0.5);
+}
+
+.text-stroke-black-sm {
+  color: #FFFFFF !important;
+  -webkit-text-stroke: 1px #000000;
+  text-shadow: 
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
 }
 
 /* Custom scrollbar for premium look */
@@ -52,6 +80,35 @@ body {
 .gpu-accelerated {
   will-change: transform, opacity;
   transform: translateZ(0);
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 200%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+.shimmer-btn-effect {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.shimmer-btn-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-25deg);
+  animation: shine 3s infinite ease-in-out;
+  pointer-events: none;
 }
 
 .liquid-scroll {

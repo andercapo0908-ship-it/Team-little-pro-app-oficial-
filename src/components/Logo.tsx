@@ -4,14 +4,18 @@ import { Dumbbell, Sparkles } from "lucide-react";
 import { db } from "../lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 
+const ORIGINAL_LOGO = "https://i.ibb.co/qYQQb0H1/file-00000000a510720e9e72df18c9f018c8.png";
+
 export const TeamLittleLogo = () => {
   const [imageError, setImageError] = useState(false);
-  const [logoUrl, setLogoUrl] = useState("https://i.ibb.co/qYQQb0H1/file-00000000a510720e9e72df18c9f018c8.png");
+  const [logoUrl, setLogoUrl] = useState(ORIGINAL_LOGO);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "config", "app"), (snap) => {
       if (snap.exists() && snap.data().logoUrl) {
         setLogoUrl(snap.data().logoUrl);
+      } else {
+        setLogoUrl(ORIGINAL_LOGO);
       }
     });
     return () => unsub();
@@ -35,7 +39,7 @@ export const TeamLittleLogo = () => {
       {/* Main Logo Container - Larger internal size, with hugging circle */}
       <div className="z-10 relative flex items-center justify-center w-[90%] h-[90%] sm:w-[85%] sm:h-[85%]">
         {/* Glow behind */}
-        <div className="absolute inset-0 bg-neon/10 blur-[40px] rounded-full" />
+        <div className="absolute inset-0 bg-amber-500/10 blur-[40px] rounded-full" />
         
         {/* Rotating Golden Arc */}
         <motion.div
@@ -44,7 +48,7 @@ export const TeamLittleLogo = () => {
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
         />
 
-        <div className="relative bg-black/40 backdrop-blur-2xl p-0 rounded-full border border-white/5 shadow-[0_0_80px_rgba(57,255,20,0.05)] flex items-center justify-center w-full h-full z-10 overflow-hidden">
+        <div className="relative bg-black/40 backdrop-blur-2xl p-0 rounded-full border border-white/5 shadow-[0_0_80px_rgba(245,158,11,0.05)] flex items-center justify-center w-full h-full z-10 overflow-hidden">
           {!imageError ? (
             <img
               src={logoUrl}
@@ -55,7 +59,7 @@ export const TeamLittleLogo = () => {
             />
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-full">
-              <Dumbbell className="text-neon w-20 h-20 mb-4" />
+              <Dumbbell className="text-amber-500 w-20 h-20 mb-4" />
               <Sparkles className="text-white w-10 h-10 absolute animate-bounce" />
             </div>
           )}

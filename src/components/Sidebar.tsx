@@ -74,11 +74,11 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
                   onClick={() => { onTabChange(item.id); onClose(); }}
                   className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group ${
                     activeTab === item.id 
-                    ? 'bg-neon text-black font-black italic shadow-lg shadow-neon/40' 
+                    ? 'bg-amber-500 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] font-black italic shadow-lg shadow-amber-500/40' 
                     : 'text-slate-400 hover:bg-white/5 hover:text-white underline-offset-4'
                   }`}
                 >
-                  <item.icon size={20} className={activeTab === item.id ? 'text-black' : 'group-hover:text-neon transition-colors'} />
+                  <item.icon size={20} className={activeTab === item.id ? 'text-white' : 'group-hover:text-amber-500 transition-colors'} />
                   <span className="uppercase tracking-[0.2em] text-[10px] font-mono">{item.label}</span>
                 </button>
               ))}

@@ -98,14 +98,14 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">GALERIA <span className="text-neon">PRO</span></h2>
-          <p className="text-neon/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Mural de Transformação & Conteúdo</p>
+          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">GALERIA <span className="text-amber-500">PRO</span></h2>
+          <p className="text-[#FFFDF5]/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Mural de Transformação & Conteúdo</p>
         </div>
         
         {isTrainerOrAdmin && activeTab === 'photos' && (
           <button 
             onClick={() => setIsAdding(true)}
-            className="bg-neon text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-neon/20"
+            className="bg-amber-500 text-black px-6 py-4 rounded-xl font-black italic uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20"
           >
             <Plus size={16} /> Nova Transformação
           </button>
@@ -123,7 +123,7 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center gap-2 px-6 py-3 rounded-full text-[10px] uppercase font-black tracking-widest transition-all ${
               activeTab === tab.id 
-              ? 'bg-neon text-black' 
+              ? 'bg-amber-500 text-black' 
               : 'text-slate-500 hover:text-white bg-white/5'
             }`}
           >
@@ -149,11 +149,11 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
                  </div>
                  <div className="relative overflow-hidden border-l border-white/10">
                    <img src={post.afterUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Depois" />
-                   <div className="absolute top-4 right-4 bg-neon px-3 py-1 rounded-full text-[9px] font-black uppercase text-black italic tracking-widest">Depois</div>
+                   <div className="absolute top-4 right-4 bg-amber-500 px-3 py-1 rounded-full text-[9px] font-black uppercase text-black italic tracking-widest">Depois</div>
                  </div>
                  
                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="p-3 bg-neon text-black rounded-full shadow-2xl scale-0 group-hover/gallery:scale-100 transition-transform duration-500">
+                    <div className="p-3 bg-amber-500 text-black rounded-full shadow-2xl scale-0 group-hover/gallery:scale-100 transition-transform duration-500">
                       <ArrowRightLeft size={20} />
                     </div>
                  </div>
@@ -178,7 +178,7 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
                     <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-500 transition-colors">
                       <MessageCircle size={16} /> Comentar
                     </button>
-                    <button className="ml-auto flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-neon transition-colors">
+                    <button className="ml-auto flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-amber-500 transition-colors">
                       <Share2 size={16} />
                     </button>
                  </div>
@@ -205,9 +205,9 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
                 />
               </div>
               <div className="p-6">
-                <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-neon mb-2 block">{video.category}</span>
+                <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-amber-500 mb-2 block">{video.category}</span>
                 <h3 className="font-black italic uppercase text-lg text-white mb-4">{video.title}</h3>
-                <button className="w-full py-3 bg-white/5 hover:bg-neon hover:text-black transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                <button className="w-full py-3 bg-white/5 hover:bg-amber-500 hover:text-black transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
                   <Play size={14} /> Assistir Aula
                 </button>
               </div>
@@ -235,7 +235,7 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
                className="w-full max-w-2xl bg-neutral-900 border border-white/10 rounded-[3rem] p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar"
              >
                 <div className="flex justify-between items-center mb-10">
-                   <h2 className="text-3xl font-black italic uppercase tracking-tighter">Postar <span className="text-neon">Resultado</span></h2>
+                   <h2 className="text-3xl font-black italic uppercase tracking-tighter">Postar <span className="text-amber-500">Resultado</span></h2>
                    <button onClick={() => setIsAdding(false)} className="p-2 hover:bg-white/10 rounded-full"><X size={24}/></button>
                  </div>
 
@@ -243,12 +243,12 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
                     <div className="grid grid-cols-2 gap-6">
                        <div className="space-y-2">
                           <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Foto Antes</label>
-                          <label className="w-full aspect-square cursor-pointer group block border-2 border-dashed border-white/10 hover:border-neon/50 rounded-2xl overflow-hidden relative bg-black transition-all">
+                          <label className="w-full aspect-square cursor-pointer group block border-2 border-dashed border-white/10 hover:border-amber-500/50 rounded-2xl overflow-hidden relative bg-black transition-all">
                             {newPost.beforeUrl ? (
                               <img src={newPost.beforeUrl} className="w-full h-full object-cover opacity-50 transition-opacity" />
                             ) : null}
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                              {uploading === 'before' ? <Loader2 size={24} className="animate-spin text-neon" /> : <Camera size={24} className="text-slate-500" />}
+                              {uploading === 'before' ? <Loader2 size={24} className="animate-spin text-amber-500" /> : <Camera size={24} className="text-slate-500" />}
                               <span className="text-[10px] font-black uppercase tracking-widest">Antes</span>
                             </div>
                             <input type="file" onChange={(e) => handleFileUpload(e, 'before')} className="hidden" />
@@ -256,12 +256,12 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
                        </div>
                        <div className="space-y-2">
                           <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Foto Depois</label>
-                          <label className="w-full aspect-square cursor-pointer group block border-2 border-dashed border-white/10 hover:border-neon/50 rounded-2xl overflow-hidden relative bg-black transition-all">
+                          <label className="w-full aspect-square cursor-pointer group block border-2 border-dashed border-white/10 hover:border-amber-500/50 rounded-2xl overflow-hidden relative bg-black transition-all">
                             {newPost.afterUrl ? (
                               <img src={newPost.afterUrl} className="w-full h-full object-cover opacity-50 transition-opacity" />
                             ) : null}
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                              {uploading === 'after' ? <Loader2 size={24} className="animate-spin text-neon" /> : <Camera size={24} className="text-slate-500" />}
+                              {uploading === 'after' ? <Loader2 size={24} className="animate-spin text-amber-500" /> : <Camera size={24} className="text-slate-500" />}
                               <span className="text-[10px] font-black uppercase tracking-widest">Depois</span>
                             </div>
                             <input type="file" onChange={(e) => handleFileUpload(e, 'after')} className="hidden" />
@@ -271,18 +271,18 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
 
                     <div className="space-y-1">
                        <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Nome do Aluno</label>
-                       <input type="text" value={newPost.studentName} onChange={e => setNewPost({...newPost, studentName: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-neon" placeholder="Ex: João Silva" />
+                       <input type="text" value={newPost.studentName} onChange={e => setNewPost({...newPost, studentName: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500" placeholder="Ex: João Silva" />
                     </div>
 
                     <div className="space-y-1">
                        <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Relato / Depoimento</label>
-                       <textarea rows={3} value={newPost.description} onChange={e => setNewPost({...newPost, description: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-neon text-sm" placeholder="Quantos kg foram perdidos? Qual foi a maior mudança?" />
+                       <textarea rows={3} value={newPost.description} onChange={e => setNewPost({...newPost, description: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 text-sm" placeholder="Quantos kg foram perdidos? Qual foi a maior mudança?" />
                     </div>
 
                     <button 
                      onClick={handleSavePost}
                      disabled={!!uploading || !newPost.beforeUrl || !newPost.afterUrl}
-                     className="w-full bg-neon text-black py-5 rounded-[2rem] font-black italic uppercase tracking-[0.3em] shadow-xl shadow-neon/10 hover:bg-white transition-all disabled:opacity-50"
+                     className="w-full bg-amber-500 text-black py-5 rounded-[2rem] font-black italic uppercase tracking-[0.3em] shadow-xl shadow-amber-500/10 hover:bg-white transition-all disabled:opacity-50"
                     >
                       {uploading ? "Aguarde Upload..." : "Publicar Transformação"}
                     </button>

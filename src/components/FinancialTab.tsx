@@ -32,19 +32,19 @@ export const FinancialTab = React.memo(({ profile }: { profile: UserProfile | nu
     <div className="p-6 md:p-8 pb-32 max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">FINANCEIRO <span className="text-neon">PRO</span></h2>
-        <p className="text-neon font-mono text-[10px] uppercase tracking-[0.5em] font-black">Saldos & Transparência Team Little</p>
+        <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">FINANCEIRO <span className="text-amber-500">PRO</span></h2>
+        <p className="text-[#FFFDF5] font-mono text-[10px] uppercase tracking-[0.5em] font-black">Saldos & Transparência Team Little</p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <motion.div whileHover={{ y: -5 }} className="bg-neutral-900 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Wallet size={64} className="text-neon" />
+            <Wallet size={64} className="text-amber-500" />
           </div>
           <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-slate-500 mb-2">Próximo Vencimento</p>
           <h3 className="text-3xl font-black text-white italic">15/05</h3>
-          <p className="text-neon font-black mt-4 flex items-center gap-2">
+          <p className="text-amber-500 font-black mt-4 flex items-center gap-2">
             R$ 150,00 <ArrowUpRight size={16} />
           </p>
         </motion.div>
@@ -96,7 +96,7 @@ export const FinancialTab = React.memo(({ profile }: { profile: UserProfile | nu
                 <tr key={payment.id} className="group hover:bg-white/5 transition-colors">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-2xl ${payment.status === 'Pago' ? 'bg-green-500/10 text-green-500' : 'bg-neon/10 text-neon'}`}>
+                      <div className={`p-3 rounded-2xl ${payment.status === 'Pago' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>
                         <FileText size={18} />
                       </div>
                       <div>
@@ -111,7 +111,7 @@ export const FinancialTab = React.memo(({ profile }: { profile: UserProfile | nu
                     <span className={`text-[9px] font-black italic px-3 py-1 rounded-full uppercase tracking-widest ${
                       payment.status === 'Pago' 
                       ? 'bg-green-500/10 text-green-500' 
-                      : 'bg-neon/10 text-neon shadow-[0_0_10px_rgba(57,255,20,0.2)]'
+                      : 'bg-amber-500/10 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
                     }`}>
                       {payment.status}
                     </span>
@@ -119,7 +119,7 @@ export const FinancialTab = React.memo(({ profile }: { profile: UserProfile | nu
                   <td className="px-8 py-6 text-right">
                     <button 
                       onClick={() => setSelectedPayment(payment)}
-                      className="p-3 bg-white/5 hover:bg-neon hover:text-black rounded-xl transition-all"
+                      className="p-3 bg-white/5 hover:bg-amber-500 hover:text-black rounded-xl transition-all"
                     >
                       {payment.status === 'Pago' ? <Download size={14} /> : <QrCode size={14} />}
                     </button>

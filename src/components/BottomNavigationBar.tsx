@@ -28,7 +28,7 @@ export const BottomNavigationBar = React.memo(({ activeTab, onTabChange, role }:
               onClick={() => onTabChange(tab.id)}
               className="relative flex flex-col items-center justify-center w-16 gap-1"
             >
-              <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'text-slate-400 hover:text-white'}`}>
+              <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'text-slate-400 hover:text-white'}`}>
                 <tab.icon size={20} />
               </div>
               <span className={`text-[9px] uppercase tracking-widest font-mono transition-colors ${isActive ? 'text-amber-500 font-bold' : 'text-slate-500'}`}>

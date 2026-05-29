@@ -9,6 +9,6 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!assets/|manifest\\.json|sw\\.js|app_icon\\.png|.*\\.).*)", "destination": "/index.html" }
   ]
 }

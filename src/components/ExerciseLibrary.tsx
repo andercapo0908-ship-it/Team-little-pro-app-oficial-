@@ -134,7 +134,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
   };
 
   return (
-    <div className="space-y-6">
+    <div className="ExerciseLibrary space-y-6" id="exercise-library-section">
       {/* Search and Filters */}
       <div className="bg-black/40 border border-white/5 rounded-3xl p-6 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
@@ -145,13 +145,13 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
               placeholder="Buscar exercício na biblioteca..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-neon transition-all"
+              className="w-full bg-black border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-amber-500 transition-all"
             />
           </div>
           {isTrainerOrAdmin && showAddButton && (
             <button 
               onClick={() => setIsAddingMode(true)}
-              className="bg-neon text-black px-6 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-neon/20"
+              className="bg-amber-500 text-black px-6 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
             >
               <Plus size={16} /> Novo Customizado
             </button>
@@ -162,7 +162,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
           <select 
             value={selectedMuscle} 
             onChange={(e) => setSelectedMuscle(e.target.value)}
-            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-neon"
+            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500"
           >
             <option value="">Grupo Muscular</option>
             {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
@@ -171,7 +171,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
           <select 
             value={selectedEquipment} 
             onChange={(e) => setSelectedEquipment(e.target.value)}
-            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-neon"
+            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500"
           >
             <option value="">Equipamento</option>
             {EQUIPMENTS.map(e => <option key={e} value={e}>{e}</option>)}
@@ -180,7 +180,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
           <select 
             value={selectedDifficulty} 
             onChange={(e) => setSelectedDifficulty(e.target.value as any)}
-            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-neon"
+            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500"
           >
             <option value="">Dificuldade</option>
             {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
@@ -198,14 +198,19 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
       {/* List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AnimatePresence mode="popLayout">
-          {filteredExercises.map(ex => (
+          {filteredExercises.map((ex, index) => (
             <motion.div 
               key={ex.id}
               layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-neutral-900/50 border border-white/5 rounded-2xl p-5 group hover:border-neon transition-all flex flex-col gap-4 shadow-xl"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ 
+                opacity: { duration: 0.2, delay: (index % 12) * 0.04 },
+                y: { type: "spring", stiffness: 350, damping: 20, delay: (index % 12) * 0.04 },
+                layout: { type: "spring", stiffness: 350, damping: 25 }
+              }}
+              className="bg-neutral-900/50 border border-white/5 rounded-2xl p-5 group hover:border-amber-500 transition-all flex flex-col gap-4 shadow-xl"
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 space-y-1">
@@ -215,7 +220,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                       {ex.videoUrl && (
                         <button 
                           onClick={() => setPreviewVideo(ex.videoUrl)}
-                          className="p-1.5 bg-neon/20 text-neon rounded-lg hover:bg-neon hover:text-black transition-all group/play"
+                          className="p-1.5 bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500 hover:text-black transition-all group/play"
                           title="Ver vídeo de demonstração"
                         >
                           <Play size={12} fill="currentColor" className="group-hover/play:scale-110 transition-transform" />
@@ -231,7 +236,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                     </div>
                     <span className={`text-[8px] font-black italic px-2 py-0.5 rounded-full ${
                       ex.difficulty === 'Iniciante' ? 'bg-green-500/10 text-green-500' :
-                      ex.difficulty === 'Intermediário' ? 'bg-neon/10 text-neon' :
+                      ex.difficulty === 'Intermediário' ? 'bg-amber-500/10 text-amber-500' :
                       'bg-rose-500/10 text-rose-500'
                     }`}>
                       {ex.difficulty === 'Avançado' ? 'PRO ELITE' : ex.difficulty}
@@ -259,11 +264,11 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                    <Video size={12} className="text-slate-600" />
                    <span className="text-[9px] uppercase font-mono tracking-widest text-slate-500">Tutorial Disponível</span>
                 </div>
-                {isTrainerOrAdmin && (profile?.role === 'admin' || ex.trainerId === profile?.uid) && (
+                {isTrainerOrAdmin && (
                    <div className="flex gap-2">
                       <button 
                         onClick={() => handleEditExercise(ex)}
-                        className="text-white/40 hover:text-neon transition-colors p-1"
+                        className="text-white/40 hover:text-amber-500 transition-colors p-1"
                         title="Editar"
                       >
                         <Edit2 size={14} />
@@ -334,11 +339,11 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                         <div className="flex flex-col gap-3">
                           {/* File Upload Option */}
                           <label className={`w-full cursor-pointer group`}>
-                            <div className={`border-2 border-dashed border-white/10 group-hover:border-neon rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-2 ${newExercise.videoUrl && !isEmbeddable(newExercise.videoUrl) ? 'bg-neon/10 border-neon' : 'bg-black'}`}>
+                            <div className={`border-2 border-dashed border-white/10 group-hover:border-amber-500 rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-2 ${newExercise.videoUrl && !isEmbeddable(newExercise.videoUrl) ? 'bg-amber-500/10 border-amber-500' : 'bg-black'}`}>
                               {uploading ? (
-                                <Loader2 size={24} className="animate-spin text-neon" />
+                                <Loader2 size={24} className="animate-spin text-amber-500" />
                               ) : (
-                                <Upload size={24} className={newExercise.videoUrl && !isEmbeddable(newExercise.videoUrl) ? 'text-neon' : 'text-slate-500'} />
+                                <Upload size={24} className={newExercise.videoUrl && !isEmbeddable(newExercise.videoUrl) ? 'text-amber-500' : 'text-slate-500'} />
                               )}
                               <span className="text-[10px] font-black uppercase tracking-widest mt-1">
                                 {uploading ? "Fazendo Upload..." : (newExercise.videoUrl && !isEmbeddable(newExercise.videoUrl) ? "Vídeo Carregado ✅" : "Upload de Arquivo")}
@@ -372,7 +377,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                    <button 
                     onClick={handleSaveExercise} 
                     disabled={uploading || !newExercise.name || !newExercise.videoUrl}
-                    className="w-full py-5 bg-neon text-black font-black italic uppercase rounded-2xl tracking-[0.2em] flex items-center justify-center gap-3 text-lg mt-4 shadow-xl hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-5 bg-amber-500 text-black font-black italic uppercase rounded-2xl tracking-[0.2em] flex items-center justify-center gap-3 text-lg mt-4 shadow-xl hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shimmer-btn-effect"
                    >
                       {uploading ? "Aguarde Upload..." : (editingExerciseId ? "Atualizar Cadastro" : "Salvar Cadastro")}
                    </button>
@@ -387,11 +392,11 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
         {selectedForInfo && (
           <div className="fixed inset-0 z-[1600] flex items-center justify-center p-4">
              <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setSelectedForInfo(null)} />
-             <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 20, opacity: 0}} className="w-full max-w-lg bg-neutral-900 border border-neon/20 rounded-[3rem] p-10 relative z-10 shadow-2xl">
+             <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 20, opacity: 0}} className="w-full max-w-lg bg-neutral-900 border border-amber-500/20 rounded-[3rem] p-10 relative z-10 shadow-2xl">
                 <button onClick={() => setSelectedForInfo(null)} className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors"><X size={20}/></button>
                 
                 <div className="flex items-center gap-3 mb-6">
-                   <div className="p-3 bg-neon/10 rounded-2xl text-neon">
+                   <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-500">
                       <Dumbbell size={24} />
                    </div>
                    <div>
@@ -403,7 +408,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                 <div className="grid grid-cols-2 gap-4 mb-8">
                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
                       <p className="text-[8px] font-mono uppercase text-slate-500 mb-1">Grupo Muscular</p>
-                      <p className="text-xs font-bold text-neon uppercase">{selectedForInfo.muscleGroup}</p>
+                      <p className="text-xs font-bold text-amber-500 uppercase">{selectedForInfo.muscleGroup}</p>
                    </div>
                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
                       <p className="text-[8px] font-mono uppercase text-slate-500 mb-1">Equipamento</p>
@@ -412,7 +417,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                 </div>
 
                 <div className="space-y-4">
-                   <div className="flex items-center gap-2 text-neon">
+                   <div className="flex items-center gap-2 text-amber-500">
                       <Zap size={14} />
                       <h4 className="text-[10px] uppercase font-black tracking-widest">Dicas Técnicas & Execução</h4>
                    </div>

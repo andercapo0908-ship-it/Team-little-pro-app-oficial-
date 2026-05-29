@@ -134,6 +134,17 @@ service cloud.firestore {
       allow delete: if isTrainer() || isAdmin();
     }
 
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow create: if isTrainer() || isAdmin();
+      allow update: if isSignedIn() && (
+        (resource.data.studentId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['read'])) ||
+        isTrainer() ||
+        isAdmin()
+      );
+      allow delete: if isSignedIn() && (resource.data.studentId == request.auth.uid || isTrainer() || isAdmin());
+    }
+
     // Legacy/Test path
     match /test/{docId} {
       allow read: if true;

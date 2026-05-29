@@ -91,20 +91,20 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
       {/* Header */}
       <div className="flex justify-between items-center bg-neutral-900 border border-white/5 p-6 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Brain size={80} className="text-neon" />
+            <Brain size={80} className="text-amber-500" />
          </div>
          <div className="flex items-center gap-5 relative z-10">
-            <div className="p-4 bg-neon/10 rounded-2xl">
-               <BrainCircuit size={32} className="text-neon" />
+            <div className="p-4 bg-amber-500/10 rounded-2xl">
+               <BrainCircuit size={32} className="text-amber-500" />
             </div>
             <div>
-               <h2 className="text-3xl font-black italic uppercase tracking-tighter italic">Personal <span className="text-neon">Inteligente</span></h2>
+               <h2 className="text-xl sm:text-3xl font-black italic uppercase tracking-tighter">Personal <span className="text-amber-500">Inteligente</span></h2>
                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Team Little Pro AI Coach</p>
             </div>
          </div>
-         <div className="hidden md:flex items-center gap-3 bg-neon/5 px-4 py-2 rounded-full border border-neon/20">
-            <div className="w-2 h-2 rounded-full bg-neon animate-pulse" />
-            <span className="text-[9px] font-black uppercase text-neon tracking-widest">Sistema Operacional</span>
+         <div className="hidden md:flex items-center gap-3 bg-amber-500/5 px-4 py-2 rounded-full border border-amber-500/20">
+            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[9px] font-black uppercase text-amber-500 tracking-widest">Sistema Operacional</span>
          </div>
       </div>
 
@@ -122,11 +122,11 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
           >
             <div className={`max-w-[85%] md:max-w-[70%] p-6 rounded-[2rem] shadow-xl relative ${
               msg.role === 'user' 
-              ? 'bg-neon text-black font-bold rounded-tr-sm shadow-neon/20' 
+              ? 'bg-amber-500 text-black font-bold rounded-tr-sm shadow-amber-500/20' 
               : 'bg-neutral-900 border border-white/5 text-slate-200 italic rounded-tl-sm'
             }`}>
               {msg.role === 'assistant' && (
-                <div className="absolute -top-3 -left-3 p-2 bg-neon rounded-full text-black shadow-lg">
+                <div className="absolute -top-3 -left-3 p-2 bg-amber-500 rounded-full text-black shadow-lg">
                    <Zap size={10} />
                 </div>
               )}
@@ -146,7 +146,7 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
                        key={i}
                        animate={{ y: [0, -5, 0] }}
                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
-                       className="w-1.5 h-1.5 bg-neon rounded-full"
+                       className="w-1.5 h-1.5 bg-amber-500 rounded-full"
                      />
                    ))}
                 </div>
@@ -158,8 +158,8 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
 
       {/* Input Area */}
       <div className="relative pt-4">
-        <div className="bg-neutral-900 border border-white/10 p-2 rounded-[2.5rem] flex items-center shadow-[0_0_50px_rgba(57,255,20,0.05)]">
-           <button className="p-4 text-slate-500 hover:text-neon transition-colors">
+        <div className="bg-neutral-900 border border-white/10 p-2 rounded-[2.5rem] flex items-center shadow-[0_0_50px_rgba(245,158,11,0.05)]">
+           <button className="p-4 text-slate-500 hover:text-amber-500 transition-colors">
               <Smile size={24} />
            </button>
            <input 
@@ -176,7 +176,7 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
              <button 
                onClick={handleSend}
                disabled={!input.trim() || loading}
-               className="p-4 bg-neon text-black rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:hover:scale-100"
+               className="p-4 bg-amber-500 text-black rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:hover:scale-100 font-bold"
              >
                 <Send size={24} />
              </button>
@@ -194,7 +194,7 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
              <button 
                key={i}
                onClick={() => setInput(chip.label)}
-               className="whitespace-nowrap px-4 py-2 bg-white/5 border border-white/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-slate-400 hover:text-neon hover:border-neon/30 transition-all flex items-center gap-2"
+               className="whitespace-nowrap px-4 py-2 bg-white/5 border border-white/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-slate-400 hover:text-amber-500 hover:border-amber-500/30 transition-all flex items-center gap-2"
              >
                <chip.icon size={12} /> {chip.label}
              </button>
