@@ -177,7 +177,22 @@ export default function App() {
         setView('dashboard');
         return true;
       } else {
-        // Logged in but no profile - maybe handle profile creation or redirect
+        // Logged in but no profile - handle profile creation for Warlyson
+        if (email.toLowerCase().includes("warlysonpersonal")) {
+          const newProfile: UserProfile = {
+            uid: fbUser.uid,
+            name: "Warlyson Personal",
+            email,
+            role: "trainer",
+            createdAt: new Date().toISOString()
+          };
+          await setDoc(doc(db, "users", fbUser.uid), newProfile);
+          localStorage.setItem('tl_current_session', JSON.stringify(newProfile));
+          setProfile(newProfile);
+          setUser(fbUser);
+          setView('dashboard');
+          return true;
+        }
         signOut(auth);
         return false;
       }
@@ -202,6 +217,9 @@ export default function App() {
       if (email.toLowerCase() === 'andercapo0908@gmail.com') {
         role = 'admin';
         finalName = "Anderson Santana";
+      } else if (email.toLowerCase().includes("warlysonpersonal")) {
+        role = 'trainer';
+        finalName = "Warlyson Personal";
       }
 
       const newProfile: UserProfile = {
