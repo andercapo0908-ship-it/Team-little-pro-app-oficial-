@@ -132,6 +132,20 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "studentId", "title", "message", "read", "createdAt"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Mensagens de chat presencial entre os alunos e o personal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "senderId", "senderName", "text", "createdAt"]
     }
   },
   "firestore": {
@@ -166,6 +180,10 @@
     "/notifications/{notificationId}": {
       "schema": "AppNotification",
       "description": "Notificações dos atletas"
+    },
+    "/chat_messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Mensagens de chat individualizadas"
     }
   }
 }

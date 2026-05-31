@@ -11,21 +11,24 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => (
     
     {/* Intro Trainer Photo Animation */}
     <motion.div
-      initial={{ opacity: 0, scale: 0.6, display: "flex" }}
-      animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 1.15], transitionEnd: { display: "none" } }}
-      transition={{ duration: 4, times: [0, 0.2, 0.8, 1], ease: "easeOut" }}
+      initial={{ opacity: 0, scale: 0.95, display: "flex" }}
+      animate={{ opacity: [0, 1, 1, 0], scale: [0.95, 1.0, 1.01, 1.03], transitionEnd: { display: "none" } }}
+      transition={{ duration: 0.6, times: [0, 0.15, 0.85, 1], ease: "easeOut" }}
       className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-center bg-premium-black"
     >
       <div className="relative flex items-center justify-center w-full h-full">
         <img 
           src="https://i.ibb.co/mVWY4CpG/6ea4457d-c1ab-4e91-87a2-13cf3e0b688b.png" 
           alt="Warlyson" 
-          className="absolute inset-0 w-full h-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(212,175,55,0.2)]"
+          className="absolute inset-0 w-full h-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(212,175,55,0.2)] gpu-accelerated"
+          loading="eager"
+          // @ts-ignore
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-premium-black via-transparent to-transparent pointer-events-none opacity-80" />
         
         <div className="absolute bottom-16 md:bottom-24 z-10 flex flex-col items-center justify-center w-full">
-          <h1 className="text-5xl md:text-7xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-gold via-white to-silver uppercase tracking-[0.1em] md:tracking-[0.2em] drop-shadow-2xl text-center">
+          <h1 className="text-5xl md:text-7xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-gold via-white to-silver uppercase tracking-[0.1em] md:tracking-[0.2em] drop-shadow-2xl text-center leading-none">
             WARLYSON
           </h1>
           <div className="mt-2 text-transparent bg-clip-text bg-gradient-to-r from-silver via-white to-gold text-xl md:text-3xl tracking-[0.4em] font-black uppercase">
@@ -41,10 +44,10 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => (
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.15, 0.25, 0.15]
+          scale: [1, 1.05, 1],
+          opacity: [0.15, 0.2, 0.15]
         }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gold/10 blur-[180px] rounded-full" 
       />
       
@@ -55,9 +58,9 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => (
 
     {/* Main Container - Strictly within screen bounds */}
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 3.5, duration: 1 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.3, ease: "easeOut" }}
       className="flex flex-col items-center justify-center h-full w-full max-w-lg mx-auto relative z-10"
     >
       

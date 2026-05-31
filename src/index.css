@@ -82,6 +82,26 @@ body {
   transform: translateZ(0);
 }
 
+@keyframes slow-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-slow-spin {
+  animation: slow-spin 5s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+@keyframes fast-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-fast-shimmer {
+  animation: fast-shimmer 1.2s infinite linear;
+  will-change: transform;
+}
+
 @keyframes shine {
   0% {
     left: -100%;

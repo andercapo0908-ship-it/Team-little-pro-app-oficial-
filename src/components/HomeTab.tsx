@@ -275,20 +275,37 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
         </div>
 
         {/* Direct Link */}
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          onClick={() => onNavigate && onNavigate('consulting')}
-          className="w-full p-6 bg-gradient-to-r from-blue-600/20 to-blue-900/10 border border-blue-500/20 rounded-[2rem] flex items-center justify-between text-left group transition-all duration-300 hover:border-blue-500/50"
-        >
-          <div>
-            <h3 className="text-blue-400 font-black italic uppercase text-lg flex items-center gap-2 mb-1">
-              <MessageCircle size={20} />
-              Direct com o Personal
-            </h3>
-            <p className="text-slate-400 text-[10px] uppercase font-mono tracking-widest">Tire dúvidas ou reajuste treinos</p>
-          </div>
-          <ChevronRight className="text-blue-400 group-hover:translate-x-2 transition-transform" />
-        </motion.button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            onClick={() => onNavigate && onNavigate('chat')}
+            className="p-6 bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-amber-500/20 rounded-[2rem] flex items-center justify-between text-left group transition-all duration-300 hover:border-amber-500/50 cursor-pointer"
+          >
+            <div>
+              <h3 className="text-amber-500 font-black italic uppercase text-lg flex items-center gap-2 mb-1">
+                <MessageCircle size={20} className="animate-pulse" />
+                Chat Interno PRO
+              </h3>
+              <p className="text-slate-400 text-[10px] uppercase font-mono tracking-widest">Conversa direta em tempo real</p>
+            </div>
+            <ChevronRight className="text-amber-500 group-hover:translate-x-2 transition-transform" />
+          </motion.button>
+
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            onClick={() => onNavigate && onNavigate('consulting')}
+            className="p-6 bg-gradient-to-r from-blue-600/20 to-blue-900/10 border border-blue-500/20 rounded-[2rem] flex items-center justify-between text-left group transition-all duration-300 hover:border-blue-500/50 cursor-pointer"
+          >
+            <div>
+              <h3 className="text-blue-400 font-black italic uppercase text-lg flex items-center gap-2 mb-1">
+                <MessageCircle size={20} />
+                WhatsApp do Personal
+              </h3>
+              <p className="text-slate-400 text-[10px] uppercase font-mono tracking-widest">Links de suporte e chamada de vídeo</p>
+            </div>
+            <ChevronRight className="text-blue-400 group-hover:translate-x-2 transition-transform" />
+          </motion.button>
+        </div>
 
       </div>
     </div>

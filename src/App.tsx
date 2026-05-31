@@ -38,6 +38,7 @@ import { LandingPage } from "./components/auth/LandingPage";
 import { LoginForm } from "./components/auth/LoginForm";
 import { AdminTab } from "./components/AdminTab";
 import { AICoachTab } from "./components/AICoachTab";
+import { ChatTab } from "./components/ChatTab";
 
 // --- Types & Constants ---
 enum OperationType { CREATE = 'create', UPDATE = 'update', DELETE = 'delete', LIST = 'list', GET = 'get', WRITE = 'write' }
@@ -79,6 +80,11 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+
+  // Scroll to top upon tab or main view changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as any });
+  }, [activeTab, view]);
 
   // Initialization
   useEffect(() => {
@@ -132,7 +138,7 @@ export default function App() {
         startListening();
       } else {
         localStorage.removeItem('tl_current_session');
-        setTimeout(() => setLoading(false), 500);
+        setLoading(false);
       }
     });
 
@@ -257,6 +263,7 @@ export default function App() {
       case 'store': return <StoreTab profile={profile} />;
       case 'financial': return <FinancialTab profile={profile} />;
       case 'consulting': return <ConsultingTab profile={profile} />;
+      case 'chat': return <ChatTab profile={profile} />;
       case 'gallery': return <GalleryTab profile={profile} />;
       case 'educational': return <EducationalTab profile={profile} />;
       default: return <HomeTab profile={profile} onNavigate={handleTabChange} />;
@@ -266,14 +273,12 @@ export default function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-cream-vivid text-center">
-        <div className="w-16 h-[1px] bg-neutral-800 relative overflow-hidden">
-           <motion.div 
-            animate={{ x: [-100, 100] }} 
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-orange-pure w-16" 
+        <div className="w-16 h-[1.5px] bg-neutral-900 relative overflow-hidden rounded-full">
+           <div 
+            className="absolute inset-x-0 top-0 bottom-0 bg-gold animate-fast-shimmer gpu-accelerated" 
            />
         </div>
-        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-orange-pure/40 font-black animate-pulse">Sincronizando DNA PRO</p>
+        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-amber-500/40 font-black animate-pulse">Sincronizando DNA PRO</p>
       </div>
     );
   }

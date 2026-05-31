@@ -13,7 +13,7 @@ export const BottomNavigationBar = React.memo(({ activeTab, onTabChange, role }:
     { id: 'home', label: 'Início', icon: Home },
     { id: 'workouts', label: 'Treinos', icon: Dumbbell },
     { id: 'store', label: 'Loja', icon: ShoppingBag },
-    { id: 'consulting', label: 'Consultoria', icon: MessageSquare },
+    { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'profile', label: 'Perfil', icon: User }
   ];
 

@@ -42,10 +42,8 @@ export const TeamLittleLogo = () => {
         <div className="absolute inset-0 bg-amber-500/10 blur-[40px] rounded-full" />
         
         {/* Rotating Golden Arc */}
-        <motion.div
-          className="absolute inset-[-6px] rounded-full border-[3px] border-amber-500/10 border-t-amber-500 border-r-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] z-20 pointer-events-none"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        <div
+          className="absolute inset-[-6px] rounded-full border-[3px] border-amber-500/10 border-t-amber-500 border-r-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] z-20 pointer-events-none animate-slow-spin gpu-accelerated"
         />
 
         <div className="relative bg-black/40 backdrop-blur-2xl p-0 rounded-full border border-white/5 shadow-[0_0_80px_rgba(245,158,11,0.05)] flex items-center justify-center w-full h-full z-10 overflow-hidden">

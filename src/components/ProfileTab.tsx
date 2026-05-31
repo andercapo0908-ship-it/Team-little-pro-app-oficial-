@@ -159,13 +159,19 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
     { id: '3', text: 'Excelente. A técnica é o segredo da longevidade. Mantenha focado.', sender: 'trainer', timestamp: new Date(Date.now() - 600000) },
   ]);
   const [newMessage, setNewMessage] = useState('');
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   };
 
   useEffect(() => {
+    // Only scroll smoothly to bottom when chat messages change
     scrollToBottom();
   }, [chatMessages]);
 
@@ -640,7 +646,7 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
 
         <div className="bg-neutral-900 border border-white/5 rounded-[4rem] h-[500px] flex flex-col overflow-hidden shadow-2xl relative">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar scroll-smooth">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar scroll-smooth">
             {chatMessages.map((msg) => (
               <motion.div 
                 key={msg.id}
@@ -660,12 +666,11 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
                 }`}>
                   {msg.text}
                   <p className={`text-[8px] mt-2 opacity-40 font-mono ${msg.sender === 'student' ? 'text-black' : 'text-slate-400'}`}>
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </motion.div>
             ))}
-            <div ref={chatEndRef} />
           </div>
 
           {/* Input Area */}

@@ -56,9 +56,8 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
 
         <div className="text-left mb-10 border-l-2 border-gold pl-6">
           <h2 className="text-4xl font-black italic tracking-tighter mb-2 uppercase select-none leading-none">
-            <span className="text-stroke-black">ACESSAR </span> 
-            <span className="text-stroke-black">{role === 'trainer' ? 'TREINADOR' : 'ALUNO'}</span> 
-            <span className="text-gold ml-2">PRO</span>
+            <span className="text-stroke-black">ACESSO </span> 
+            <span className="text-gold">{role === 'trainer' ? 'PERSONAL' : 'ALUNO'}</span>
           </h2>
           <p className="text-silver text-[10px] uppercase tracking-widest font-mono">Digite seu nome e senha para entrar</p>
         </div>
@@ -107,7 +106,7 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
             {loading ? (
               <div className="w-5 h-5 border-2 border-premium-black border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <>ENTRAR NO DNA PRO <ChevronRight size={18} /></>
+              <>ENTRAR NO TIME <ChevronRight size={18} /></>
             )}
           </motion.button>
         </form>

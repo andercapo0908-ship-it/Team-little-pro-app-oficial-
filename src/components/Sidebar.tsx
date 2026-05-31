@@ -39,6 +39,7 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
     { id: 'gallery', label: 'Mural de Transformação', icon: ImageIcon },
     { id: 'educational', label: 'Conteúdo PRO', icon: BookOpen },
     { id: 'consulting', label: 'Consultoria Premium', icon: MessageSquare },
+    { id: 'chat', label: 'Chat Direto', icon: MessageSquare },
   ];
 
   if (role === 'admin' || role === 'trainer') {
