@@ -517,7 +517,7 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                        {activeSubTab === 'Treinos' && (
                          <div className="space-y-6">
                            {editingStudentWorkout ? (
-                             <div className="bg-black/20 border border-white/5 rounded-[2.5rem] p-6 space-y-6">
+                             <div className="bg-premium-card border border-neutral-800 rounded-[2.5rem] p-6 space-y-6">
                                <div className="flex justify-between items-center border-b border-white/5 pb-4">
                                  <h4 className="font-mono text-xs uppercase text-amber-500 font-black tracking-widest">
                                    {editingStudentWorkout.id.startsWith('wk_new') ? 'Criando Novo Plano' : 'Editando Plano de Treino'}

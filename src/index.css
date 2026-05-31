@@ -94,11 +94,11 @@ body {
 }
 
 @keyframes fast-shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% { transform: translate3d(-100%, 0, 0); }
+  100% { transform: translate3d(100%, 0, 0); }
 }
 .animate-fast-shimmer {
-  animation: fast-shimmer 1.2s infinite linear;
+  animation: fast-shimmer 0.8s infinite linear;
   will-change: transform;
 }
 
@@ -144,3 +144,24 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Fix mobile GPU Skia rendering/tearing glitches (colored horizontal/vertical lines) in Chrome on Android */
+.border-white\/5 {
+  border-color: #1c1c1c !important; /* Replaces transparent with premium solid gray */
+}
+.border-white\/10 {
+  border-color: #262626 !important; /* Replaces transparent with solid charcoal */
+}
+.border-white\/20 {
+  border-color: #383838 !important; /* Replaces transparent with solid standard zinc */
+}
+.border-amber-500\/10 {
+  border-color: #2a2007 !important; /* Replaces transparent with premium solid gold dark */
+}
+.border-amber-500\/20 {
+  border-color: #3f300b !important; /* Replaces transparent gold with solid gold dark */
+}
+.border-amber-500\/50 {
+  border-color: #6e5414 !important; /* Replaces semi-transparent gold with solid gold */
+}
+

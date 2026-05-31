@@ -24,16 +24,14 @@ export const TeamLittleLogo = () => {
   return (
     <motion.div 
       className="relative flex items-center justify-center w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64"
-      initial={{ scale: 0.5, opacity: 0, rotate: -180 }}
+      initial={{ scale: 0.95, opacity: 0 }}
       animate={{ 
         scale: 1, 
         opacity: 1,
-        rotate: 0,
       }}
       transition={{ 
-        duration: 1.2,
+        duration: 0.5,
         ease: "easeOut",
-        scale: { type: "spring", damping: 15 }
       }}
     >
       {/* Main Logo Container - Larger internal size, with hugging circle */}
