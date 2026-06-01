@@ -5,6 +5,8 @@ import { UserProfile, Workout, Exercise } from "../types";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { ExerciseLibrary } from "./ExerciseLibrary";
+import { StudentWorkoutViewer } from "./StudentWorkoutViewer";
+import { Exercise3DViewer } from "./Exercise3DViewer";
 
 interface WorkoutsTabProps {
   profile: UserProfile | null;
@@ -16,6 +18,7 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
+  const [viewingWorkout, setViewingWorkout] = useState<Workout | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -116,8 +119,8 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
              <motion.div 
                key={w.id} 
                whileHover={{ scale: 1.02, y: -5 }}
-               onClick={() => isTrainerOrAdmin && handleEdit(w)}
-               className={`bg-neutral-900 border ${isTrainerOrAdmin ? 'cursor-pointer hover:border-amber-500/50' : 'border-white/5'} p-8 rounded-[3rem] flex flex-col gap-6 shadow-2xl relative overflow-hidden group transition-all`}
+               onClick={() => isTrainerOrAdmin ? handleEdit(w) : setViewingWorkout(w)}
+               className={`bg-neutral-900 border cursor-pointer hover:border-amber-500/50 p-8 rounded-[3rem] flex flex-col gap-6 shadow-2xl relative overflow-hidden group transition-all`}
              >
                <div className="flex justify-between items-start z-10">
                  <div className="space-y-3">
@@ -165,6 +168,13 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
         </div>
       ) : (
         <ExerciseLibrary profile={profile} />
+      )}
+
+      {viewingWorkout && (
+        <StudentWorkoutViewer 
+           workout={viewingWorkout} 
+           onClose={() => setViewingWorkout(null)} 
+        />
       )}
     </div>
   );
