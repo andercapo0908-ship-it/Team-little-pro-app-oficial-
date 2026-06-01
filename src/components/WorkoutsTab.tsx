@@ -170,12 +170,14 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
         <ExerciseLibrary profile={profile} />
       )}
 
-      {viewingWorkout && (
-        <StudentWorkoutViewer 
-           workout={viewingWorkout} 
-           onClose={() => setViewingWorkout(null)} 
-        />
-      )}
+      <AnimatePresence>
+        {viewingWorkout && (
+          <StudentWorkoutViewer 
+             workout={viewingWorkout} 
+             onClose={() => setViewingWorkout(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 });

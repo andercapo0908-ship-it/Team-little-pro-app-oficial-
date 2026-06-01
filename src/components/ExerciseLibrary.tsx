@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Filter, Plus, Trash2, Video, X, Play, Info, Dumbbell, ShieldAlert, Zap, Upload, Loader2, Edit2 } from "lucide-react";
+import { Search, Filter, Plus, Trash2, Video, X, Play, Info, Dumbbell, ShieldAlert, Zap, Upload, Loader2, Edit2, Rotate3D } from "lucide-react";
 import { db, storage } from "../lib/firebase";
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc, orderBy } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { LibraryExercise, ExerciseDifficulty, UserProfile } from "../types";
+import { Exercise3DViewer } from "./Exercise3DViewer";
 
 const MUSCLE_GROUPS = ["Peitoral", "Costas", "Ombros", "Bíceps", "Tríceps", "Quadríceps", "Posterior", "Glúteo", "Panturrilhas", "Abdômen", "Cardio"];
 const EQUIPMENTS = ["Halteres", "Barra", "Máquina", "Polia", "Peso do Corpo", "Elástico", "Kettlebell"];
@@ -39,6 +40,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
   });
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
   const [selectedForInfo, setSelectedForInfo] = useState<LibraryExercise | null>(null);
+  const [preview3D, setPreview3D] = useState<LibraryExercise | null>(null);
 
   useEffect(() => {
     const q = query(collection(db, "exercises"), orderBy("name", "asc"));
@@ -217,6 +219,13 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                   <div className="flex items-center flex-wrap gap-2">
                     <h5 className="font-bold text-white uppercase text-sm tracking-tight">{ex.name}</h5>
                     <div className="flex gap-1.5 ml-auto md:ml-0">
+                      <button 
+                        onClick={() => setPreview3D(ex)}
+                        className="p-1.5 bg-gold/10 text-gold rounded-lg hover:bg-gold hover:text-black transition-all group/3d"
+                        title="Holograma 3D"
+                      >
+                        <Rotate3D size={12} className="group-hover/3d:animate-slow-spin" />
+                      </button>
                       {ex.videoUrl && (
                         <button 
                           onClick={() => setPreviewVideo(ex.videoUrl)}
@@ -453,6 +462,12 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                 )}
              </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {preview3D && (
+          <Exercise3DViewer exercise={preview3D as any} onClose={() => setPreview3D(null)} />
         )}
       </AnimatePresence>
     </div>

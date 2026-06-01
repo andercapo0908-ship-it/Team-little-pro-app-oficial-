@@ -162,9 +162,11 @@ export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => 
     </div>
 
     {/* 3D Hologram Modal */}
-    {activeExercise && (
-       <Exercise3DViewer exercise={activeExercise} onClose={() => setActiveExercise(null)} />
-    )}
+    <AnimatePresence>
+      {activeExercise && (
+         <Exercise3DViewer exercise={activeExercise} onClose={() => setActiveExercise(null)} />
+      )}
+    </AnimatePresence>
     </>
   );
 });
