@@ -1,12 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Rotate3D, Activity } from 'lucide-react';
+import { X, Rotate3D, Activity, AlertTriangle } from 'lucide-react';
 import { Exercise } from '../types';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface Props {
   exercise: Exercise | null;
   onClose: () => void;
 }
+
+// 3D Hologram Model Component
+const HologramModel = () => {
+  // We use a reliable low poly model from three.js examples, loaded as a hologram
+  const { scene } = useGLTF('https://unpkg.com/three@0.160.0/examples/models/gltf/Xbot.glb');
+  const group = useRef<THREE.Group>(null);
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+         const mesh = child as THREE.Mesh;
+         // Apply golden wireframe/hologram material
+         mesh.material = new THREE.MeshBasicMaterial({ 
+           color: 0xD4AF37, 
+           wireframe: true,
+           transparent: true,
+           opacity: 0.6,
+           blending: THREE.AdditiveBlending
+         });
+      }
+    });
+  }, [scene]);
+
+  useFrame((state) => {
+    if (group.current) {
+       group.current.rotation.y = state.clock.elapsedTime * 0.3;
+       group.current.position.y = Math.sin(state.clock.elapsedTime * 1.5) * 0.05 - 1.2;
+    }
+  });
+
+  return (
+    <group ref={group}>
+      <primitive object={scene} scale={1.2} />
+    </group>
+  );
+};
+
 
 export const Exercise3DViewer = React.memo(({ exercise, onClose }: Props) => {
   const [mounted, setMounted] = useState(false);
@@ -72,27 +112,21 @@ export const Exercise3DViewer = React.memo(({ exercise, onClose }: Props) => {
                <div className="absolute inset-8 rounded-full border border-gold/40 border-dotted" />
             </motion.div>
 
-            {/* Wireframe Hologram Image */}
+            {/* Wireframe Hologram Image / 3D Canvas */}
             {mounted && (
-               <motion.div 
-                 className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none pb-8"
-                 animate={{ y: [-10, 10, -10] }}
-                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-               >
-                 <motion.img 
-                     src="https://i.ibb.co/V9ZYHnQ/3d-wireframe-human-running-3d-model-a89e9f3b51-transformed.png"
-                     alt="Hologram Wireframe"
-                     className="w-full h-full object-contain scale-[1.1] sm:scale-[1.3] transform"
-                     style={{
-                       filter: "sepia(100%) hue-rotate(10deg) saturate(400%) contrast(150%) brightness(1.2) drop-shadow(0 0 20px rgba(225,173,1,0.8))",
-                       mixBlendMode: "screen",
-                     }}
-                     animate={{ 
-                       rotateY: [0, 10, 0, -10, 0],
-                     }}
-                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                 />
-               </motion.div>
+               <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-auto pb-8">
+                 <Suspense fallback={
+                    <div className="text-gold font-mono text-[10px] uppercase tracking-widest animate-pulse flex flex-col items-center gap-2">
+                       <Activity size={16} /> Carregando Malha 3D...
+                    </div>
+                 }>
+                    <Canvas camera={{ position: [0, 0, 3.5], fov: 45 }} className="w-full h-full">
+                       <ambientLight intensity={0.5} />
+                       <HologramModel />
+                       <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={1} />
+                    </Canvas>
+                 </Suspense>
+               </div>
             )}
 
             {/* Floating Particles */}
