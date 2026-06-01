@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Eye, EyeOff } from "lucide-react";
 
 interface LoginFormProps {
   role: 'student' | 'trainer';
@@ -12,6 +12,7 @@ interface LoginFormProps {
 export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: LoginFormProps) => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -76,14 +77,24 @@ export const LoginForm = React.memo(({ role, onBack, onLogin, onRegister }: Logi
           </div>
           <div className="space-y-1">
             <label className="text-[10px] uppercase tracking-[0.2em] font-mono text-silver ml-1">Senha de Acesso</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-neutral-900/60 border border-white/5 rounded-xl py-4 px-4 focus:border-gold outline-none transition-all font-mono text-sm placeholder:text-slate-700"
-              placeholder="••••••••"
-              disabled={loading}
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-neutral-900/60 border border-white/5 rounded-xl py-4 px-4 focus:border-gold outline-none transition-all font-mono text-sm placeholder:text-slate-700 pr-12"
+                placeholder={showPassword ? "SENHA" : "••••••••"}
+                disabled={loading}
+              />
+              <button 
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-gold transition-colors cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Ocultar senha" : "Ver senha"}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           
           {error && (

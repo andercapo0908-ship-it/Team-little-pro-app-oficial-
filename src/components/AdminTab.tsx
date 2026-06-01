@@ -21,6 +21,8 @@ import { db } from "../lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, query, where, setDoc, deleteDoc } from "firebase/firestore";
 import { UserProfile, AppSettings, CheckinEntry, Workout, Evaluation } from "../types";
 import { ImageUpload } from "./ImageUpload";
+import { AnthropometryForm } from "./AnthropometryForm";
+import { EvaluationChart } from "./EvaluationChart";
 import { FirestoreService } from "../lib/firestoreService";
 
 export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | null }) => {
@@ -774,7 +776,7 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                                </div>
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                  <div className="space-y-2">
-                                   <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Data da Avaliação <Edit3 size={10} className="text-amber-500" /></label>
+                                   <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Data da Avaliação</label>
                                    <input 
                                      type="date"
                                      value={editingEvaluation.date}
@@ -783,7 +785,7 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                                    />
                                  </div>
                                  <div className="space-y-2">
-                                   <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Peso Corporal (kg) <Edit3 size={10} className="text-amber-500" /></label>
+                                   <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Peso Corporal (kg)</label>
                                    <input 
                                      type="number"
                                      step="0.1"
@@ -792,25 +794,23 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                                      className="w-full bg-black/60 border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500"
                                    />
                                  </div>
-                                 <div className="space-y-2">
-                                   <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Gordura Corporal (% BF) <Edit3 size={10} className="text-amber-500" /></label>
-                                   <input 
-                                     type="number"
-                                     step="0.1"
-                                     value={editingEvaluation.bodyFat || 0}
-                                     onChange={(e) => setEditingEvaluation({...editingEvaluation, bodyFat: parseFloat(e.target.value) || 0})}
-                                     className="w-full bg-black/60 border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500"
-                                   />
-                                 </div>
-                                 <div className="space-y-2 md:col-span-2">
-                                   <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Anotações / Anamnese <Edit3 size={10} className="text-amber-500" /></label>
-                                   <textarea 
-                                     value={editingEvaluation.notes}
-                                     onChange={(e) => setEditingEvaluation({...editingEvaluation, notes: e.target.value})}
-                                     className="w-full bg-black/60 border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 text-sm h-28"
-                                     placeholder="EX: Atleta relatou boa recuperação, foco no aumento de carga nas pernas..."
-                                   />
-                                 </div>
+                               </div>
+
+                               <AnthropometryForm 
+                                 evaluation={editingEvaluation} 
+                                 onChange={setEditingEvaluation} 
+                                 userAge={editingUser.health?.age || 30} 
+                                 userGender={editingUser.health?.gender || 'male'} 
+                               />
+
+                               <div className="space-y-2">
+                                 <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 flex items-center gap-1">Anotações / Anamnese</label>
+                                 <textarea 
+                                   value={editingEvaluation.notes}
+                                   onChange={(e) => setEditingEvaluation({...editingEvaluation, notes: e.target.value})}
+                                   className="w-full bg-black/60 border border-white/5 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 text-sm h-28"
+                                   placeholder="EX: Atleta relatou boa recuperação, foco no aumento de carga nas pernas..."
+                                 />
                                </div>
                                <div className="flex gap-4 pt-4 border-t border-white/5">
                                  <button type="button" onClick={() => setEditingEvaluation(null)} className="flex-1 py-4 bg-white/5 text-slate-400 font-black italic uppercase rounded-2xl cursor-pointer text-xs">Cancelar</button>
@@ -819,7 +819,7 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                              </div>
                            ) : (
                              <div className="space-y-6">
-                               <div className="flex justify-between items-center">
+                               <div className="flex justify-between items-center mb-6">
                                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-4">Histórico de Avaliações</span>
                                  <button 
                                    type="button"
@@ -837,6 +837,8 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                                    <Plus size={14} /> + Nova Avaliação
                                  </button>
                                </div>
+
+                               <EvaluationChart evaluations={studentEvaluations} />
 
                                {studentEvaluations.length === 0 ? (
                                  <div className="py-16 text-center border border-white/5 border-dashed rounded-[2.5rem] bg-black/10">

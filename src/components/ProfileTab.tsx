@@ -115,6 +115,8 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
         date: e.date,
         weight: parseFloat(e.weight) || 0,
         bf: parseFloat(e.bodyFat) || 0,
+        leanMass: parseFloat(e.leanMass) || 0,
+        fatMass: parseFloat(e.fatMass) || 0,
         formattedDate: new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         isReal: true,
       }));
@@ -122,11 +124,11 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
     const currentW = parseFloat(String(healthData.weight)) || 82.5;
     const currentBf = parseFloat(String(healthData.bf)) || 14.5;
     return [
-      { date: "2026-04-19", weight: Number((currentW - 2.5).toFixed(1)), bf: Number((currentBf + 1.2).toFixed(1)), formattedDate: "19/04", isReal: false },
-      { date: "2026-04-26", weight: Number((currentW - 1.8).toFixed(1)), bf: Number((currentBf + 0.8).toFixed(1)), formattedDate: "26/04", isReal: false },
-      { date: "2026-05-03", weight: Number((currentW - 1.0).toFixed(1)), bf: Number((currentBf + 0.4).toFixed(1)), formattedDate: "03/05", isReal: false },
-      { date: "2026-05-10", weight: Number((currentW - 0.4).toFixed(1)), bf: Number((currentBf + 0.1).toFixed(1)), formattedDate: "10/05", isReal: false },
-      { date: "Hoje", weight: currentW, bf: currentBf, formattedDate: "Hoje", isReal: false },
+      { date: "2026-04-19", weight: Number((currentW - 2.5).toFixed(1)), bf: Number((currentBf + 1.2).toFixed(1)), leanMass: 69, fatMass: 11, formattedDate: "19/04", isReal: false },
+      { date: "2026-04-26", weight: Number((currentW - 1.8).toFixed(1)), bf: Number((currentBf + 0.8).toFixed(1)), leanMass: 70, fatMass: 10.7, formattedDate: "26/04", isReal: false },
+      { date: "2026-05-03", weight: Number((currentW - 1.0).toFixed(1)), bf: Number((currentBf + 0.4).toFixed(1)), leanMass: 71, fatMass: 10.5, formattedDate: "03/05", isReal: false },
+      { date: "2026-05-10", weight: Number((currentW - 0.4).toFixed(1)), bf: Number((currentBf + 0.1).toFixed(1)), leanMass: 71.5, fatMass: 10.6, formattedDate: "10/05", isReal: false },
+      { date: "Hoje", weight: currentW, bf: currentBf, leanMass: Number((currentW * (1 - currentBf/100)).toFixed(1)), fatMass: Number((currentW * (currentBf/100)).toFixed(1)), formattedDate: "Hoje", isReal: false },
     ];
   }, [evaluations, healthData.weight, healthData.bf]);
 

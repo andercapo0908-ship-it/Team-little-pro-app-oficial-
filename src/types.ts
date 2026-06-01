@@ -3,6 +3,8 @@ export type UserRole = 'admin' | 'trainer' | 'student';
 export interface HealthMetrics {
   weight: number;
   height: number;
+  age?: number;
+  gender?: 'male' | 'female';
   bf?: number;
   goal: string;
   restrictions?: string[];
@@ -97,6 +99,7 @@ export interface Product {
   colors: string[];
   category: string;
   stock: number;
+  unit?: string;
   whatsappNumber: string;
   pixKey: string;
   createdAt: string;
@@ -133,7 +136,36 @@ export interface Evaluation {
   trainerId: string;
   date: string;
   weight: number;
+  height?: number;
   bodyFat?: number;
+  fatMass?: number;
+  leanMass?: number;
+  protocol?: string;
+  measurements?: {
+    skinfolds?: {
+      triceps?: number;
+      biceps?: number;
+      subscapular?: number;
+      suprailiac?: number;
+      abdominal?: number;
+      thigh?: number;
+      calf?: number;
+      chest?: number;
+      midaxillary?: number;
+    };
+    circumferences?: {
+      chest?: number;
+      waist?: number;
+      abdomen?: number;
+      hip?: number;
+      armRight?: number;
+      armLeft?: number;
+      thighRight?: number;
+      thighLeft?: number;
+      calfRight?: number;
+      calfLeft?: number;
+    };
+  };
   photos?: string[];
   notes: string;
 }
