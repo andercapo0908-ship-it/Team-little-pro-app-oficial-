@@ -10,20 +10,18 @@ interface Props {
 
 export const Exercise3DViewer = React.memo(({ exercise, onClose }: Props) => {
   const [currentAngle, setCurrentAngle] = useState(180);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [explanation, setExplanation] = useState<string>('');
+  const [loadingExpl, setLoadingExpl] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        const time = Date.now() / 1000;
-        const angle = Math.round(122.5 + Math.sin(time * 3) * 52.5);
-        setCurrentAngle(angle);
-      }, 50);
-    }
+    const interval = setInterval(() => {
+      const time = Date.now() / 1000;
+      const angle = Math.round(122.5 + Math.sin(time * 3) * 52.5);
+      setCurrentAngle(angle);
+    }, 50);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, []);
 
   if (!exercise) return null;
 
@@ -119,6 +117,35 @@ export const Exercise3DViewer = React.memo(({ exercise, onClose }: Props) => {
   const bio = getBiomechanicalDetails(muscle);
   const pinId = getPinterestId(muscle, exercise.videoUrl);
 
+  useEffect(() => {
+    if (!exercise) return;
+    setLoadingExpl(true);
+    fetch('/api/gemini/explain-exercise', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: exercise.name,
+        description: exercise.description,
+        muscleGroup: exercise.muscleGroup
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.explanation) {
+        setExplanation(data.explanation);
+      } else {
+        setExplanation(exercise.description || bio.tips);
+      }
+    })
+    .catch(err => {
+      console.error("Erro ao traduzir explicação:", err);
+      setExplanation(exercise.description || bio.tips);
+    })
+    .finally(() => {
+      setLoadingExpl(false);
+    });
+  }, [exercise, bio.tips]);
+
   return (
     <div className={`fixed inset-0 z-[99999] flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4 sm:p-8'}`}>
       {/* Background Dim Backdrop */}
@@ -157,13 +184,6 @@ export const Exercise3DViewer = React.memo(({ exercise, onClose }: Props) => {
                {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
              </button>
              <button 
-               onClick={() => setIsPlaying(!isPlaying)} 
-               className="p-2 bg-gold/10 text-gold rounded-full hover:text-black hover:bg-gold transition-colors pointer-events-auto flex items-center justify-center"
-               title={isPlaying ? "Pausar Simulação" : "Retomar Simulação"}
-             >
-               {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
-             </button>
-             <button 
                onClick={onClose} 
                className="p-2 bg-white/5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors pointer-events-auto"
                title="Fechar"
@@ -181,40 +201,42 @@ export const Exercise3DViewer = React.memo(({ exercise, onClose }: Props) => {
           <div className={`relative w-full ${isFullscreen ? 'flex-1 min-h-[50vh]' : 'h-[350px] sm:h-[420px]'} bg-[#030303] flex items-center justify-center overflow-hidden border-b border-white/5 transition-all duration-300`}>
              {/* Gradient glow behind video */}
              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12)_0%,rgba(0,0,0,0)_70%)]" />
-
-             {/* Webkit Mask to cleanly cut off edges and hide Pinterest branding */}
-             <div 
-                className={`w-full h-full flex items-center justify-center relative z-10 transition-all duration-500`}
-                style={{ 
-                   WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 95%)',
-                   maskImage: 'linear-gradient(to bottom, black 80%, transparent 95%)'
-                }}
-             >
+ 
+             {/* Centered container with no WebkitMask cutting off athlete details */}
+             <div className="w-full h-full flex items-center justify-center relative z-10">
                 {/* Scaled iframe container to isolate the video from borders */}
-                <div className={`w-[345px] h-[714px] flex items-center justify-center origin-center transform ${isFullscreen ? 'scale-[0.8] sm:scale-100 -translate-y-8 sm:-translate-y-0' : 'scale-[0.6] sm:scale-[0.7] -translate-y-16'} relative transition-all duration-500`}>
+                <div className={`w-[345px] h-[714px] flex items-center justify-center origin-center transform ${isFullscreen ? 'scale-[0.8] sm:scale-[0.85]' : 'scale-[0.6] sm:scale-[0.65] -translate-y-12'} relative transition-all duration-500`}>
                   <iframe 
-                     src={`https://assets.pinterest.com/ext/embed.html?id=${pinId}&autoplay=1&mute=1&loop=1`}
+                     src={`https://assets.pinterest.com/ext/embed.html?id=${pinId}`}
                      title="Animação do Exercício"
-                     className={`w-[345px] h-[714px] border-0 transition-opacity duration-300 ${!isPlaying ? 'opacity-0' : 'opacity-100'}`}
+                     className="w-[345px] h-[714px] border-0 opacity-100"
                      style={{ border: 0 }}
                      scrolling="no" 
                   />
-                  {!isPlaying && (
-                     <div className="absolute inset-0 bg-black border border-gold/10 shadow-[0_0_50px_rgba(212,175,55,0.05)] rounded-3xl flex items-center justify-center" />
-                  )}
                 </div>
              </div>
              
-             {/* Absolute overlay shield removed to allow clicks */}
+             {/* Invisible Click Blocker: catches all events so the user CANNOT open external Pinterest tabs/sites */}
+             <div className="absolute inset-0 z-30 cursor-default pointer-events-auto bg-transparent" />
           </div>
-
+ 
           {/* Section 2: Info (Guia de Execução) */}
           <div className="p-6 bg-gradient-to-b from-neutral-900 to-neutral-950 border-b border-white/5 relative">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
             <p className="text-[11px] uppercase font-bold font-mono tracking-widest text-gold mb-2.5 flex items-center gap-2">
                <Activity size={12} className="text-gold" /> GUIA DE EXECUÇÃO
             </p>
-            <p className="text-xs text-white/90 leading-relaxed font-mono tracking-wide">{exercise.description || bio.tips}</p>
+            {loadingExpl ? (
+               <div className="flex flex-col gap-2 py-1">
+                  <div className="h-3 w-3/4 bg-white/10 rounded animate-pulse" />
+                  <div className="h-3 w-5/6 bg-white/10 rounded animate-pulse" />
+                  <div className="h-3 w-4/5 bg-white/10 rounded animate-pulse" />
+               </div>
+            ) : (
+               <p className="text-xs text-white/90 leading-relaxed font-sans tracking-wide">
+                  {explanation || exercise.description || bio.tips}
+               </p>
+            )}
           </div>
 
           {/* Section 3: Biomechanic Scanner */}

@@ -30,13 +30,15 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [seeding, setSeeding] = useState(false);
   const [newExercise, setNewExercise] = useState<Partial<LibraryExercise>>({
     name: "",
     muscleGroup: "Peitoral",
     equipment: "Halteres",
     difficulty: "Iniciante",
     videoUrl: "",
-    description: ""
+    description: "",
+    lottieFileName: ""
   });
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
   const [selectedForInfo, setSelectedForInfo] = useState<LibraryExercise | null>(null);
@@ -88,6 +90,31 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
     }
   };
 
+  const handleLottieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+      alert("Por favor, selecione um arquivo JSON Lottie.");
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const storageRef = ref(storage, `lottie-animations/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      setNewExercise(prev => ({ ...prev, lottieFileName: downloadURL }));
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Erro ao fazer upload do arquivo Lottie.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSaveExercise = async () => {
     if (!newExercise.name || !newExercise.videoUrl) {
       alert("Nome e URL/Vídeo são obrigatórios!");
@@ -106,10 +133,44 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
       await setDoc(doc(db, "exercises", id), exerciseToSave);
       setIsAddingMode(false);
       setEditingExerciseId(null);
-      setNewExercise({ name: "", muscleGroup: "Peitoral", equipment: "Halteres", difficulty: "Iniciante", videoUrl: "", description: "" });
+      setNewExercise({ name: "", muscleGroup: "Peitoral", equipment: "Halteres", difficulty: "Iniciante", videoUrl: "", description: "", lottieFileName: "" });
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar exercício");
+    }
+  };
+
+  const handleSeedExercises = async () => {
+    if (exercises.length > 0) {
+      if (!confirm("Isso adicionará o catálogo de exercícios clássicos (1990-Presente) ao banco de dados atual. Deseja prosseguir?")) {
+        return;
+      }
+    }
+    setSeeding(true);
+    try {
+      const { PREDEFINED_EXERCISES } = await import("../data/gym_exercises");
+      let addedCount = 0;
+      for (const ex of PREDEFINED_EXERCISES) {
+        const nameNormalized = ex.name.toLowerCase().trim();
+        const exists = exercises.some(e => e.name.toLowerCase().trim() === nameNormalized);
+        if (!exists) {
+          const id = "ex_" + Math.random().toString(36).substr(2, 9);
+          const exerciseToSave: LibraryExercise = {
+            ...ex,
+            id,
+            trainerId: profile?.uid || 'system',
+            createdAt: new Date().toISOString()
+          };
+          await setDoc(doc(db, "exercises", id), exerciseToSave);
+          addedCount++;
+        }
+      }
+      alert(`Sucesso! Sincronizados ${addedCount} novos exercícios de alta performance históricos do fisiculturismo na sua biblioteca.`);
+    } catch (err) {
+      console.error("Erro seeding:", err);
+      alert("Erro ao sincronizar os exercícios pré-definidos.");
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -151,12 +212,30 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
             />
           </div>
           {isTrainerOrAdmin && showAddButton && (
-            <button 
-              onClick={() => setIsAddingMode(true)}
-              className="bg-amber-500 text-black px-6 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
-            >
-              <Plus size={16} /> Novo Customizado
-            </button>
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <button 
+                onClick={handleSeedExercises}
+                disabled={seeding}
+                className="bg-zinc-900 border border-amber-500/20 hover:border-amber-500 text-amber-500 hover:text-black hover:bg-amber-500 px-5 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all shadow-lg disabled:opacity-50"
+                title="Sincronizar catálogo histórico de exercícios desde 1990 até o presente"
+              >
+                {seeding ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Sincronizando...
+                  </>
+                ) : (
+                  <>
+                    <Rotate3D size={14} /> Catálogo Histórico (1990-{new Date().getFullYear()})
+                  </>
+                )}
+              </button>
+              <button 
+                onClick={() => setIsAddingMode(true)}
+                className="bg-amber-500 text-black px-6 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
+              >
+                <Plus size={16} /> Novo Customizado
+              </button>
+            </div>
           )}
         </div>
 
@@ -383,6 +462,35 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                       <textarea rows={3} value={newExercise.description} onChange={e => setNewExercise({...newExercise, description: e.target.value})} className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 text-sm" placeholder="Explique a execução correta, postura e respiração..." />
                    </div>
 
+                   <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">Animação Lottie</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={newExercise.lottieFileName || ""}
+                          onChange={(e) => setNewExercise({ ...newExercise, lottieFileName: e.target.value })}
+                          className="flex-1 bg-black border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-amber-500 text-sm font-mono appearance-none"
+                        >
+                          <option value="">Selecione uma animação...</option>
+                          {Array.from(new Set(exercises.map(e => e.lottieFileName).filter(Boolean))).map((lottie) => (
+                            <option key={lottie} value={lottie}>{lottie!}</option>
+                          ))}
+                        </select>
+                        <label className="cursor-pointer bg-black border border-white/10 hover:border-amber-500 rounded-2xl px-6 flex items-center justify-center transition-all group shrink-0" title="Upload JSON">
+                          <Upload size={18} className="text-slate-500 group-hover:text-amber-500" />
+                          <input type="file" accept=".json,application/json" className="hidden" onChange={handleLottieUpload} disabled={uploading} />
+                        </label>
+                      </div>
+                      <input 
+                        type="text" 
+                        value={newExercise.lottieFileName || ""} 
+                        onChange={e => setNewExercise({...newExercise, lottieFileName: e.target.value})} 
+                        className="w-full bg-black/50 border border-white/5 rounded-2xl py-3 px-6 text-slate-400 outline-none focus:border-amber-500 text-xs font-mono" 
+                        placeholder="Ou digite a URL / Nome do arquivo diretamente" 
+                        disabled={uploading}
+                      />
+                      <p className="text-[9px] text-slate-500 ml-1 font-mono mt-1">Faça upload de um JSON Lottie, escolha um existente, ou cole a URL.</p>
+                   </div>
+
                    <button 
                     onClick={handleSaveExercise} 
                     disabled={uploading || !newExercise.name || !newExercise.videoUrl}
@@ -414,7 +522,7 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
                       <p className="text-[8px] font-mono uppercase text-slate-500 mb-1">Grupo Muscular</p>
                       <p className="text-xs font-bold text-amber-500 uppercase">{selectedForInfo.muscleGroup}</p>
@@ -424,6 +532,16 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                       <p className="text-xs font-bold text-white uppercase">{selectedForInfo.equipment}</p>
                    </div>
                 </div>
+
+                {selectedForInfo.lottieFileName && (
+                   <div className="bg-amber-500/10 border border-amber-500/10 px-4 py-3 rounded-2xl mb-6 flex justify-between items-center">
+                      <div>
+                         <span className="text-[8px] font-mono uppercase text-slate-500 block mb-0.5">Animação Lottie Conectada</span>
+                         <span className="text-xs font-bold text-amber-500 font-mono">{selectedForInfo.lottieFileName}</span>
+                      </div>
+                      <span className="text-[8px] font-mono bg-amber-500 text-black px-2 py-0.5 rounded-full font-bold">LOTTIE</span>
+                   </div>
+                )}
 
                 <div className="space-y-4">
                    <div className="flex items-center gap-2 text-amber-500">

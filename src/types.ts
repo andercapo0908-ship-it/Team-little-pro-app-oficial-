@@ -64,6 +64,7 @@ export interface Exercise {
   description?: string;
   technicalTips?: string;
   progress?: ExerciseProgress;
+  lottieFileName?: string;
 }
 
 export type ExerciseDifficulty = 'Iniciante' | 'Intermediário' | 'Avançado';
@@ -78,6 +79,7 @@ export interface LibraryExercise {
   description: string;
   trainerId?: string; // If present, it's a custom exercise by a specific trainer
   createdAt: string;
+  lottieFileName?: string;
 }
 
 export interface Workout {
