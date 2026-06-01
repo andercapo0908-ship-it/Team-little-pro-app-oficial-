@@ -34,6 +34,8 @@ export interface UserProfile {
   email: string;
   role: UserRole;
   photoURL?: string;
+  beforePhoto?: string;
+  afterPhoto?: string;
   createdAt: string;
   health?: HealthMetrics;
   portfolio?: TrainerPortfolio;

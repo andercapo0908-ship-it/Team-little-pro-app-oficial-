@@ -41,7 +41,7 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
     weight: 82.5,
     height: 1.78,
     bf: 14.5,
-    goal: "Hipertrofia Elite",
+    goal: "Hipertrofia",
     bloodType: "A+",
     heartRate: 62
   };
@@ -243,11 +243,35 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
   };
 
   const updateHealthField = (field: keyof HealthMetrics, value: string) => {
+    if (field === 'goal' || field === 'bloodType') {
+      setHealthData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+      return;
+    }
     const numValue = parseFloat(value);
     setHealthData(prev => ({
       ...prev,
       [field]: isNaN(numValue) && value !== '' ? prev[field] : (value === '' ? 0 : numValue)
     }));
+  };
+
+  const handleBeforeAfterUpload = async (type: 'before' | 'after', b64: string) => {
+    if (!profile) return;
+    setSaving(true);
+    try {
+      await updateDoc(doc(db, "users", profile.uid), {
+        [`${type}Photo`]: b64
+      });
+      // Optionally update local temp profile but it reflects from upstream
+      setTempProfile(prev => prev ? { ...prev, [`${type}Photo`]: b64 } : prev);
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao fazer upload da foto.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -256,40 +280,37 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row items-center gap-10"
+        className="flex flex-col md:flex-row items-center gap-8"
       >
-        <div className="w-48 h-48 rounded-[3.5rem] border-4 border-amber-500 overflow-hidden shadow-[0_0_60px_rgba(245,158,11,0.2)] relative group flex-shrink-0">
+        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-amber-500 overflow-hidden shadow-[0_0_40px_rgba(245,158,11,0.2)] relative group flex-shrink-0">
           <img 
             src={profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.uid}`} 
             alt={profile?.name} 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" 
           />
           <button 
             onClick={() => { setTempProfile(profile); setIsEditingProfile(true); }}
             className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
-             <Edit2 className="text-amber-500" size={32} />
+             <Edit2 className="text-amber-500" size={28} />
           </button>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-4 pointer-events-none">
-            <span className="text-[10px] font-black italic uppercase text-amber-500 tracking-[0.3em]">Status: PRO ATLETA</span>
-          </div>
         </div>
         <div className="text-center md:text-left">
           <div className="flex items-center gap-4 justify-center md:justify-start">
             <motion.h2 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-6xl md:text-7xl font-black italic tracking-tighter uppercase mb-4 leading-none"
+              className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase mb-3 leading-none text-white"
             >
               {profile?.name}
             </motion.h2>
           </div>
           <div className="flex flex-wrap justify-center md:justify-start gap-3">
-            <span className="bg-neutral-900 border border-white/10 px-6 py-2 rounded-2xl text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 font-bold shadow-xl">
+            <span className="bg-neutral-900 border border-white/10 px-5 py-2 rounded-2xl text-[10px] sm:text-xs font-mono uppercase tracking-widest flex items-center gap-2 font-bold shadow-md">
               <Activity size={14} className="text-amber-500" /> {healthData.goal}
             </span>
-            <span className="bg-neutral-900 border border-white/10 px-6 py-2 rounded-2xl text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 font-bold shadow-xl text-amber-500">
-              <Calendar size={14} /> TEAM LITTLE PRO
+            <span className="bg-neutral-900 border border-white/10 px-5 py-2 rounded-2xl text-[10px] sm:text-xs font-mono uppercase tracking-widest flex items-center gap-2 font-bold shadow-md text-amber-500">
+              <Calendar size={14} /> APEX PERFORMANCE
             </span>
           </div>
         </div>
@@ -318,8 +339,9 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
            )}
         </div>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {[
+            { label: 'Foco/Objetivo', field: 'goal', val: healthData.goal, icon: Activity, color: 'text-purple-500', isText: true },
             { label: 'Peso (kg)', field: 'weight', val: healthData.weight, icon: Scale, color: 'text-amber-500', step: '0.1' },
             { label: 'Altura (m)', field: 'height', val: healthData.height, icon: TrendingUp, color: 'text-blue-500', step: '0.01' },
             { label: 'Gordura (%)', field: 'bf', val: healthData.bf, icon: Heart, color: 'text-rose-500', step: '0.1' },
@@ -330,24 +352,24 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.05 }}
-              className={`p-6 sm:p-8 bg-neutral-900 border ${isEditingMetrics ? 'border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.1)]' : 'border-white/5'} rounded-[3rem] hover:border-amber-500/20 transition-all group overflow-hidden relative shadow-2xl`}
+              className={`p-5 sm:p-6 bg-neutral-900 border ${isEditingMetrics ? 'border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.1)]' : 'border-white/5'} rounded-3xl hover:border-amber-500/20 transition-all group overflow-hidden relative shadow-md`}
             >
-              <div className={`absolute -top-4 -right-4 p-4 opacity-5 group-hover:opacity-20 transition-all duration-500 ${m.color} scale-150 pointer-events-none`}>
-                <m.icon size={60} />
+              <div className={`absolute -top-3 -right-3 p-3 opacity-5 group-hover:opacity-10 transition-all duration-500 ${m.color} scale-125 pointer-events-none`}>
+                <m.icon size={50} />
               </div>
-              <p className="text-slate-500 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] font-mono mb-3 font-bold">{m.label}</p>
+              <p className="text-slate-500 text-[10px] uppercase tracking-widest font-mono mb-2 font-bold truncate">{m.label}</p>
               
               {isEditingMetrics ? (
                 <input 
-                  type="number"
+                  type={m.isText ? "text" : "number"}
                   step={m.step}
                   min="0"
                   value={m.val || ''}
                   onChange={(e) => updateHealthField(m.field as keyof HealthMetrics, e.target.value)}
-                  className={`w-full bg-black/50 border-b-2 border-amber-500 text-3xl font-black italic text-white tracking-tight outline-none py-1 focus:bg-black/80 transition-colors`}
+                  className={`w-full bg-black/50 border-b-2 border-amber-500 text-xl md:text-2xl font-black italic text-white tracking-tight outline-none py-1 focus:bg-black/80 transition-colors ${m.isText ? 'text-sm' : ''}`}
                 />
               ) : (
-                <p className="text-3xl font-black italic text-white tracking-tight">
+                <p className={`font-black italic text-white tracking-tight break-words ${m.isText ? 'text-xl' : 'text-2xl md:text-3xl'}`}>
                   {m.val}{m.field === 'weight' ? 'kg' : m.field === 'height' ? 'm' : m.field === 'bf' ? '%' : ''}
                 </p>
               )}
@@ -587,6 +609,33 @@ export const ProfileTab = React.memo(({ profile }: { profile: UserProfile | null
           </p>
         )}
       </motion.div>
+
+      {/* Antes e Depois Section */}
+      <div className="space-y-6 pt-6">
+        <h3 className="text-[11px] font-mono uppercase tracking-[0.4em] text-slate-500 ml-2 font-black flex items-center gap-2">
+          Transformação <span className="text-amber-500">Antes e Depois</span>
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <div className="bg-neutral-900 border border-white/5 rounded-[2rem] p-6 flex flex-col items-center">
+              <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-4">Antes</h4>
+              <ImageUpload
+                label="Foto Antiga (Início)"
+                currentImage={profile?.beforePhoto || tempProfile?.beforePhoto}
+                onImageAction={(b64) => handleBeforeAfterUpload('before', b64)}
+                className="h-64 sm:h-80"
+              />
+           </div>
+           <div className="bg-neutral-900 border border-white/5 rounded-[2rem] p-6 flex flex-col items-center">
+              <h4 className="text-xs uppercase tracking-widest text-amber-500 font-bold mb-4">Atual</h4>
+              <ImageUpload
+                label="Foto Recente"
+                currentImage={profile?.afterPhoto || tempProfile?.afterPhoto}
+                onImageAction={(b64) => handleBeforeAfterUpload('after', b64)}
+                className="h-64 sm:h-80"
+              />
+           </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         <div className="space-y-8">
