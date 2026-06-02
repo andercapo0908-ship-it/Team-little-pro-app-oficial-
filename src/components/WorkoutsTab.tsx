@@ -4,7 +4,7 @@ import { Dumbbell, Plus, Trash2, Video, Search, Save, X, Play, Info } from "luci
 import { UserProfile, Workout, Exercise } from "../types";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
-export default function ExerciseLibrary() {
+import function ExerciseLibrary() {
 import { StudentWorkoutViewer } from "./StudentWorkoutViewer";
 import { Exercise3DViewer } from "./Exercise3DViewer";
 
