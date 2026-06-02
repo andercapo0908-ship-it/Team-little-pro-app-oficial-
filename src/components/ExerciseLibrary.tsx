@@ -71,7 +71,7 @@ const BANCO_EXERCICIOS: Exercicio[] = [
   }
 ];
 
-export default function ExerciseLibrary() {
+export function ExerciseLibrary() {
   const [busca, setBusca] = useState('');
   const [grupoSelecionado, setGrupoSelecionado] = useState('Todos');
   const [nivelSelecionado, setNivelSelecionado] = useState('Todos');
