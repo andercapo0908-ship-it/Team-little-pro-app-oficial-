@@ -39,6 +39,7 @@ import { LoginForm } from "./components/auth/LoginForm";
 import { AdminTab } from "./components/AdminTab";
 import { AICoachTab } from "./components/AICoachTab";
 import { ChatTab } from "./components/ChatTab";
+import { ExerciseLibrary } from "./components/ExerciseLibrary";
 
 // --- Types & Constants ---
 enum OperationType { CREATE = 'create', UPDATE = 'update', DELETE = 'delete', LIST = 'list', GET = 'get', WRITE = 'write' }
@@ -260,6 +261,7 @@ export default function App() {
       case 'admin': return <AdminTab currentProfile={profile} />;
       case 'ai_coach': return <AICoachTab profile={profile} />;
       case 'workouts': return <WorkoutsTab profile={profile} />;
+      case 'library': return <ExerciseLibrary profile={profile} />;
       case 'store': return <StoreTab profile={profile} />;
       case 'financial': return <FinancialTab profile={profile} />;
       case 'consulting': return <ConsultingTab profile={profile} />;

@@ -61,6 +61,7 @@ export interface Exercise {
   rest: string;
   muscleGroup: string;
   videoUrl?: string;
+  gifUrl?: string;
   description?: string;
   technicalTips?: string;
   progress?: ExerciseProgress;
@@ -76,6 +77,7 @@ export interface LibraryExercise {
   equipment: string;
   difficulty: ExerciseDifficulty;
   videoUrl: string;
+  gifUrl?: string;
   description: string;
   trainerId?: string; // If present, it's a custom exercise by a specific trainer
   createdAt: string;

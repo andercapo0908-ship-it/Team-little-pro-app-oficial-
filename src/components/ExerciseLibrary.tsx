@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Filter, Plus, Trash2, Video, X, Play, Info, Dumbbell, ShieldAlert, Zap, Upload, Loader2, Edit2, Rotate3D } from "lucide-react";
+import { Search, Filter, Plus, Trash2, Video, X, Play, Info, Dumbbell, ShieldAlert, Zap, Upload, Loader2, Edit2, Rotate3D, Heart, Download } from "lucide-react";
 import { db, storage } from "../lib/firebase";
 import { collection, query, onSnapshot, doc, setDoc, deleteDoc, orderBy } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { LibraryExercise, ExerciseDifficulty, UserProfile } from "../types";
 import { Exercise3DViewer } from "./Exercise3DViewer";
+import { useExercises } from "../hooks/useExercises";
+import { ExerciseCard } from "./ExerciseCard";
 
 const MUSCLE_GROUPS = ["Peitoral", "Costas", "Ombros", "Bíceps", "Tríceps", "Quadríceps", "Posterior", "Glúteo", "Panturrilhas", "Abdômen", "Cardio"];
 const EQUIPMENTS = ["Halteres", "Barra", "Máquina", "Polia", "Peso do Corpo", "Elástico", "Kettlebell"];
@@ -19,12 +21,13 @@ interface ExerciseLibraryProps {
 
 export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = true }: ExerciseLibraryProps) => {
   const isTrainerOrAdmin = profile?.role === 'trainer' || profile?.role === 'admin';
-  const [exercises, setExercises] = useState<LibraryExercise[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const { exercises, searchIndex, loading, favorites, toggleFavorite } = useExercises();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMuscle, setSelectedMuscle] = useState("");
   const [selectedEquipment, setSelectedEquipment] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<ExerciseDifficulty | "">("");
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   
   const [isAddingMode, setIsAddingMode] = useState(false);
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
@@ -44,25 +47,18 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
   const [selectedForInfo, setSelectedForInfo] = useState<LibraryExercise | null>(null);
   const [preview3D, setPreview3D] = useState<LibraryExercise | null>(null);
 
-  useEffect(() => {
-    const q = query(collection(db, "exercises"), orderBy("name", "asc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setExercises(snap.docs.map(d => ({ ...d.data(), id: d.id } as LibraryExercise)));
-      setLoading(false);
-    }, (err) => {
-      console.error("Exercises sync error:", err);
-      setLoading(false);
+  // Instant precomputed search filter using the memoized search index
+  const filteredExercises = React.useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    return searchIndex.filter(ex => {
+      const matchesSearch = term ? ex.searchText.includes(term) : true;
+      const matchesMuscle = selectedMuscle ? ex.muscleGroup === selectedMuscle : true;
+      const matchesEquipment = selectedEquipment ? ex.equipment === selectedEquipment : true;
+      const matchesDifficulty = selectedDifficulty ? ex.difficulty === selectedDifficulty : true;
+      const matchesFavorite = showOnlyFavorites ? ex.isFavorite : true;
+      return matchesSearch && matchesMuscle && matchesEquipment && matchesDifficulty && matchesFavorite;
     });
-    return () => unsub();
-  }, []);
-
-  const filteredExercises = exercises.filter(ex => {
-    const matchesSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase()) || (ex.description && ex.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesMuscle = selectedMuscle ? ex.muscleGroup === selectedMuscle : true;
-    const matchesEquipment = selectedEquipment ? ex.equipment === selectedEquipment : true;
-    const matchesDifficulty = selectedDifficulty ? ex.difficulty === selectedDifficulty : true;
-    return matchesSearch && matchesMuscle && matchesEquipment && matchesDifficulty;
-  });
+  }, [searchIndex, searchTerm, selectedMuscle, selectedEquipment, selectedDifficulty, showOnlyFavorites]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -142,14 +138,18 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
 
   const handleSeedExercises = async () => {
     if (exercises.length > 0) {
-      if (!confirm("Isso adicionará o catálogo de exercícios clássicos (1990-Presente) ao banco de dados atual. Deseja prosseguir?")) {
+      if (!confirm("Isso adicionará o catálogo de exercícios clássicos e animados ao banco de dados atual. Deseja prosseguir?")) {
         return;
       }
     }
     setSeeding(true);
     try {
       const { PREDEFINED_EXERCISES } = await import("../data/gym_exercises");
+      const { RAW_IMPORTED_DATA, mapRawImported } = await import("../data/imported_exercises");
+      
       let addedCount = 0;
+      
+      // 1. Seed predefined Portuguese exercises
       for (const ex of PREDEFINED_EXERCISES) {
         const nameNormalized = ex.name.toLowerCase().trim();
         const exists = exercises.some(e => e.name.toLowerCase().trim() === nameNormalized);
@@ -165,12 +165,46 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
           addedCount++;
         }
       }
-      alert(`Sucesso! Sincronizados ${addedCount} novos exercícios de alta performance históricos do fisiculturismo na sua biblioteca.`);
+
+      // 2. Seed raw imported exercises with dynamic translation mapping
+      for (const rawEx of RAW_IMPORTED_DATA) {
+        const mappedEx = mapRawImported(rawEx);
+        const nameNormalized = mappedEx.name.toLowerCase().trim();
+        const exists = exercises.some(e => e.name.toLowerCase().trim() === nameNormalized);
+        if (!exists) {
+          const id = "ex_" + Math.random().toString(36).substr(2, 9);
+          const exerciseToSave: LibraryExercise = {
+            ...mappedEx,
+            id,
+            trainerId: profile?.uid || 'system',
+            createdAt: new Date().toISOString()
+          };
+          await setDoc(doc(db, "exercises", id), exerciseToSave);
+          addedCount++;
+        }
+      }
+
+      alert(`Sucesso! Sincronizados ${addedCount} novos exercícios de alta performance e animados com GIF na sua biblioteca.`);
     } catch (err) {
       console.error("Erro seeding:", err);
       alert("Erro ao sincronizar os exercícios pré-definidos.");
     } finally {
       setSeeding(false);
+    }
+  };
+
+  const handleExportJSON = () => {
+    try {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exercises, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `academic_exercises_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    } catch (err) {
+      console.error("Export error:", err);
+      alert("Erro ao exportar catálogo para download.");
     }
   };
 
@@ -208,67 +242,89 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
               placeholder="Buscar exercício na biblioteca..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-amber-500 transition-all"
+              className="w-full bg-black border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-amber-500 transition-all font-medium"
             />
           </div>
-          {isTrainerOrAdmin && showAddButton && (
-            <div className="flex flex-wrap gap-2 shrink-0">
-              <button 
-                onClick={handleSeedExercises}
-                disabled={seeding}
-                className="bg-zinc-900 border border-amber-500/20 hover:border-amber-500 text-amber-500 hover:text-black hover:bg-amber-500 px-5 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all shadow-lg disabled:opacity-50"
-                title="Sincronizar catálogo histórico de exercícios desde 1990 até o presente"
-              >
-                {seeding ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" /> Sincronizando...
-                  </>
-                ) : (
-                  <>
-                    <Rotate3D size={14} /> Catálogo Histórico (1990-{new Date().getFullYear()})
-                  </>
-                )}
-              </button>
-              <button 
-                onClick={() => setIsAddingMode(true)}
-                className="bg-amber-500 text-black px-6 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
-              >
-                <Plus size={16} /> Novo Customizado
-              </button>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <button 
+              onClick={handleExportJSON}
+              className="bg-zinc-900 border border-white/10 hover:border-amber-500 text-white hover:text-black hover:bg-amber-500 px-4 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all shadow-md cursor-pointer"
+              title="Exportar todos os exercícios cadastrados como JSON para backup completo offline"
+            >
+              <Download size={14} /> Exportar Backup JSON
+            </button>
+            {isTrainerOrAdmin && showAddButton && (
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleSeedExercises}
+                  disabled={seeding}
+                  className="bg-zinc-900 border border-amber-500/20 hover:border-amber-500 text-amber-500 hover:text-black hover:bg-amber-500 px-5 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all shadow-lg disabled:opacity-50"
+                  title="Sincronizar catálogo histórico de exercícios desde 1990 até o presente"
+                >
+                  {seeding ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Sincronizando...
+                    </>
+                  ) : (
+                    <>
+                      <Rotate3D size={14} /> Catálogo Histórico (1990-{new Date().getFullYear()})
+                    </>
+                  )}
+                </button>
+                <button 
+                  onClick={() => setIsAddingMode(true)}
+                  className="bg-amber-500 text-black px-6 py-3 rounded-2xl font-black italic uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
+                >
+                  <Plus size={16} /> Novo Customizado
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <select 
-            value={selectedMuscle} 
-            onChange={(e) => setSelectedMuscle(e.target.value)}
-            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500"
-          >
-            <option value="">Grupo Muscular</option>
-            {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-          
-          <select 
-            value={selectedEquipment} 
-            onChange={(e) => setSelectedEquipment(e.target.value)}
-            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500"
-          >
-            <option value="">Equipamento</option>
-            {EQUIPMENTS.map(e => <option key={e} value={e}>{e}</option>)}
-          </select>
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 flex-grow max-w-4xl">
+            <select 
+              value={selectedMuscle} 
+              onChange={(e) => setSelectedMuscle(e.target.value)}
+              className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500 min-w-[120px]"
+            >
+              <option value="">Grupo Muscular</option>
+              {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+            
+            <select 
+              value={selectedEquipment} 
+              onChange={(e) => setSelectedEquipment(e.target.value)}
+              className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500 min-w-[120px]"
+            >
+              <option value="">Equipamento</option>
+              {EQUIPMENTS.map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
 
-          <select 
-            value={selectedDifficulty} 
-            onChange={(e) => setSelectedDifficulty(e.target.value as any)}
-            className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500"
-          >
-            <option value="">Dificuldade</option>
-            {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
+            <select 
+              value={selectedDifficulty} 
+              onChange={(e) => setSelectedDifficulty(e.target.value as any)}
+              className="bg-neutral-900 border border-white/5 rounded-xl py-2 px-3 text-[10px] uppercase font-mono tracking-widest text-slate-300 outline-none focus:border-amber-500 min-w-[120px]"
+            >
+              <option value="">Dificuldade</option>
+              {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+
+            <button 
+              onClick={() => setShowOnlyFavorites(prev => !prev)}
+              className={`py-2 px-4 rounded-xl text-[10px] uppercase font-mono tracking-widest border transition-all flex items-center gap-2 cursor-pointer ${
+                showOnlyFavorites 
+                  ? 'border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500/25' 
+                  : 'border-white/5 bg-neutral-900 text-slate-400 hover:text-white hover:border-white/10'
+              }`}
+            >
+              <Heart size={10} fill={showOnlyFavorites ? "currentColor" : "none"} /> {showOnlyFavorites ? "Favoritos: On" : "Favoritos: Todos"}
+            </button>
+          </div>
 
           <button 
-            onClick={() => { setSelectedMuscle(""); setSelectedEquipment(""); setSelectedDifficulty(""); setSearchTerm(""); }}
+            onClick={() => { setSelectedMuscle(""); setSelectedEquipment(""); setSelectedDifficulty(""); setSearchTerm(""); setShowOnlyFavorites(false); }}
             className="text-[9px] uppercase font-mono tracking-widest text-slate-500 hover:text-white transition-colors"
           >
             Limpar Filtros
@@ -280,98 +336,24 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AnimatePresence mode="popLayout">
           {filteredExercises.map((ex, index) => (
-            <motion.div 
+            <ExerciseCard
               key={ex.id}
-              layout
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ 
-                opacity: { duration: 0.2, delay: (index % 12) * 0.04 },
-                y: { type: "spring", stiffness: 350, damping: 20, delay: (index % 12) * 0.04 },
-                layout: { type: "spring", stiffness: 350, damping: 25 }
+              exercise={ex}
+              index={index}
+              isFavorite={favorites.includes(ex.id)}
+              onToggleFavorite={toggleFavorite}
+              onPreview3D={setPreview3D}
+              onPreviewVideo={setPreviewVideo}
+              onShowInfo={setSelectedForInfo}
+              onSelect={onSelectExercise}
+              isTrainerOrAdmin={isTrainerOrAdmin}
+              onEdit={handleEditExercise}
+              onDelete={async (id) => {
+                if (confirm("Deseja excluir este exercício da biblioteca?")) {
+                  await deleteDoc(doc(db, "exercises", id));
+                }
               }}
-              className="bg-neutral-900/50 border border-white/5 rounded-2xl p-5 group hover:border-amber-500 transition-all flex flex-col gap-4 shadow-xl"
-            >
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center flex-wrap gap-2">
-                    <h5 className="font-bold text-white uppercase text-sm tracking-tight">{ex.name}</h5>
-                    <div className="flex gap-1.5 ml-auto md:ml-0">
-                      <button 
-                        onClick={() => setPreview3D(ex)}
-                        className="p-1.5 bg-gold/10 text-gold rounded-lg hover:bg-gold hover:text-black transition-all group/3d"
-                        title="Holograma 3D"
-                      >
-                        <Rotate3D size={12} className="group-hover/3d:animate-slow-spin" />
-                      </button>
-                      {ex.videoUrl && (
-                        <button 
-                          onClick={() => setPreviewVideo(ex.videoUrl)}
-                          className="p-1.5 bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500 hover:text-black transition-all group/play"
-                          title="Ver vídeo de demonstração"
-                        >
-                          <Play size={12} fill="currentColor" className="group-hover/play:scale-110 transition-transform" />
-                        </button>
-                      )}
-                      <button 
-                        onClick={() => setSelectedForInfo(ex)}
-                        className="p-1.5 bg-white/5 text-slate-400 rounded-lg hover:bg-white hover:text-black transition-all"
-                        title="Ver dicas técnicas"
-                      >
-                        <Info size={12} />
-                      </button>
-                    </div>
-                    <span className={`text-[8px] font-black italic px-2 py-0.5 rounded-full ${
-                      ex.difficulty === 'Iniciante' ? 'bg-green-500/10 text-green-500' :
-                      ex.difficulty === 'Intermediário' ? 'bg-amber-500/10 text-amber-500' :
-                      'bg-rose-500/10 text-rose-500'
-                    }`}>
-                      {ex.difficulty === 'Avançado' ? 'PRO ELITE' : ex.difficulty}
-                    </span>
-                  </div>
-                  <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{ex.muscleGroup} • {ex.equipment}</p>
-                </div>
-                {onSelectExercise && (
-                  <button 
-                    onClick={() => onSelectExercise(ex)}
-                    className="p-3 bg-amber-500 text-black rounded-xl hover:bg-white transition-colors shadow-lg shrink-0"
-                    title="Adicionar ao Treino"
-                  >
-                    <Plus size={16} />
-                  </button>
-                )}
-              </div>
-
-              <p className="text-xs text-slate-400 line-clamp-2 italic cursor-pointer hover:text-white transition-colors" onClick={() => setSelectedForInfo(ex)}>
-                "{ex.description || "Sem descrição disponível."}"
-              </p>
-
-              <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                <div className="flex items-center gap-2">
-                   <Video size={12} className="text-slate-600" />
-                   <span className="text-[9px] uppercase font-mono tracking-widest text-slate-500">Tutorial Disponível</span>
-                </div>
-                {isTrainerOrAdmin && (
-                   <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleEditExercise(ex)}
-                        className="text-white/40 hover:text-amber-500 transition-colors p-1"
-                        title="Editar"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button 
-                        onClick={async () => { if(confirm("Deseja excluir este exercício da biblioteca?")) await deleteDoc(doc(db, "exercises", ex.id)); }}
-                        className="text-red-500/40 hover:text-red-500 transition-colors p-1"
-                        title="Excluir"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                   </div>
-                )}
-              </div>
-            </motion.div>
+            />
           ))}
         </AnimatePresence>
 
@@ -418,7 +400,8 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                         <select value={newExercise.difficulty} onChange={e => setNewExercise({...newExercise, difficulty: e.target.value as any})} className="w-full bg-black border border-white/10 rounded-xl py-3 px-4 text-xs font-bold text-white outline-none focus:border-amber-500">
                            {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
-                      </div>
+
+                                          </div>
                    </div>
 
                    <div className="space-y-4">
@@ -575,6 +558,10 @@ export const ExerciseLibrary = ({ profile, onSelectExercise, showAddButton = tru
                 <button onClick={() => setPreviewVideo(null)} className="absolute top-6 right-6 bg-black/50 p-3 rounded-full text-white hover:text-amber-500 z-20"><X size={24}/></button>
                 {isEmbeddable(previewVideo) ? (
                   <iframe src={getEmbedUrl(previewVideo)} className="w-full h-full border-0" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+                ) : previewVideo.toLowerCase().includes('.gif') ? (
+                  <div className="w-full h-full flex items-center justify-center bg-zinc-950 p-6">
+                    <img src={previewVideo} className="max-w-full max-h-full object-contain rounded-3xl select-none" alt="Exercício Animado" referrerPolicy="no-referrer" />
+                  </div>
                 ) : (
                   <video src={previewVideo} className="w-full h-full" controls autoPlay />
                 )}

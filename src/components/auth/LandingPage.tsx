@@ -17,7 +17,7 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => {
       const timer = setTimeout(() => {
         setShowIntro(false);
         sessionStorage.setItem("tl_intro_v4_played", "true");
-      }, 1800);
+      }, 7000);
       return () => clearTimeout(timer);
     }
   }, [showIntro]);
@@ -32,7 +32,7 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 1, 0] }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.8, times: [0, 0.15, 0.85, 1], ease: "easeInOut" }}
+            transition={{ duration: 7.0, times: [0, 0.05, 0.95, 1], ease: "easeInOut" }}
             className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-center bg-premium-black"
           >
             <div className="relative flex items-center justify-center w-full h-full">
@@ -73,7 +73,7 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: showIntro ? 1.6 : 0, duration: 0.3, ease: "easeOut" }}
+        transition={{ delay: showIntro ? 6.8 : 0, duration: 0.3, ease: "easeOut" }}
         className="flex flex-col items-center justify-center h-full w-full max-w-lg mx-auto relative z-10"
       >
         

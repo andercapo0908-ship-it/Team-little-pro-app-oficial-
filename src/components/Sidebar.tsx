@@ -14,7 +14,8 @@ import {
   DollarSign,
   ImageIcon,
   BrainCircuit,
-  BookOpen
+  BookOpen,
+  Video
 } from "lucide-react";
 import React from "react";
 
@@ -32,6 +33,7 @@ export const Sidebar = React.memo(({ isOpen, onClose, activeTab, onTabChange, on
     { id: 'home', label: 'Estatísticas PRO', icon: LayoutDashboard },
     { id: 'profile', label: 'Meu Perfil', icon: UserIcon },
     { id: 'workouts', label: 'Fichas de Performance', icon: Dumbbell },
+    { id: 'library', label: 'Biblioteca de Exercícios', icon: Video },
     { id: 'ai_coach', label: 'Personal Inteligente', icon: BrainCircuit },
     { id: 'portfolio', label: 'Nosso Team', icon: Award },
     { id: 'store', label: 'Loja Team Little', icon: ShoppingBag },
