@@ -9,22 +9,6 @@ interface Props {
   onClose: () => void;
 }
 
-const isEmbeddable = (url: string) => {
-  return url && (url.includes('youtube.com') || url.includes('youtu.be'));
-};
-
-const getEmbedUrl = (url: string) => {
-  if (!url) return '';
-  let embedUrl = url;
-  if (embedUrl.includes('youtube.com/watch?v=')) {
-    embedUrl = embedUrl.replace('watch?v=', 'embed/').split('&')[0];
-  } else if (embedUrl.includes('youtu.be/')) {
-    const id = embedUrl.split('youtu.be/')[1].split('?')[0];
-    embedUrl = `https://www.youtube.com/embed/${id}`;
-  }
-  return embedUrl;
-};
-
 export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => {
   const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
   const [completedSets, setCompletedSets] = useState<Record<string, number>>({});
@@ -129,42 +113,9 @@ export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => 
 
                      {ex.description && (
                        <p className="text-xs text-slate-400 italic mb-4 bg-black/40 p-3 rounded-xl border-l-[3px] border-gold">
-                          {ex.description}
-                        </p>
-                      )}
-
-                      {ex.videoUrl && (
-                        <div className="w-full h-40 bg-black/60 rounded-2xl overflow-hidden mb-4 relative border border-white/5 flex items-center justify-center">
-                          {ex.videoUrl.toLowerCase().includes('.gif') ? (
-                            <img
-                              src={ex.videoUrl}
-                              alt={ex.name}
-                              className="w-full h-full object-contain"
-                              referrerPolicy="no-referrer"
-                              loading="lazy"
-                            />
-                          ) : isEmbeddable(ex.videoUrl) ? (
-                            <iframe 
-                              src={getEmbedUrl(ex.videoUrl)} 
-                              className="w-full h-full border-0 absolute inset-0 rounded-2xl pointer-events-none" 
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            />
-                          ) : (
-                            <video
-                              src={ex.videoUrl}
-                              className="w-full h-full object-cover"
-                              preload="metadata"
-                              muted
-                              loop
-                              playsInline
-                              autoPlay
-                            />
-                          )}
-                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-[8px] font-mono font-bold text-gold px-2 py-0.5 rounded uppercase tracking-wider">
-                            Demonstração Ativa
-                          </div>
-                        </div>
-                      )}
+                         {ex.description}
+                       </p>
+                     )}
 
                      <button 
                        onClick={() => toggleSetCompletion(ex.name, ex.sets)}
@@ -211,11 +162,9 @@ export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => 
     </div>
 
     {/* 3D Hologram Modal */}
-    <AnimatePresence>
-      {activeExercise && (
-         <Exercise3DViewer exercise={activeExercise} onClose={() => setActiveExercise(null)} />
-      )}
-    </AnimatePresence>
+    {activeExercise && (
+       <Exercise3DViewer exercise={activeExercise} onClose={() => setActiveExercise(null)} />
+    )}
     </>
   );
 });

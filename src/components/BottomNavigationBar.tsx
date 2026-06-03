@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Dumbbell, ShoppingBag, MessageSquare, User, Video } from 'lucide-react';
+import { Home, Dumbbell, ShoppingBag, MessageSquare, User } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface BottomNavProps {
@@ -12,7 +12,6 @@ export const BottomNavigationBar = React.memo(({ activeTab, onTabChange, role }:
   const tabs = [
     { id: 'home', label: 'Início', icon: Home },
     { id: 'workouts', label: 'Treinos', icon: Dumbbell },
-    { id: 'library', label: 'Biblioteca', icon: Video },
     { id: 'store', label: 'Loja', icon: ShoppingBag },
     { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'profile', label: 'Perfil', icon: User }

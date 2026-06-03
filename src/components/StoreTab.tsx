@@ -153,7 +153,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">THE <span className="text-amber-500">SHOP PRO</span></h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">LOJA <span className="text-amber-500">EXCLUSIVA</span></h2>
           <p className="text-amber-500/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Equipamento de Elite Team Little</p>
         </div>
 
@@ -278,7 +278,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
              <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
              <motion.div initial={{x: "100%"}} animate={{x: 0}} exit={{x: "100%"}} className="w-full max-w-md bg-neutral-900 h-full relative z-10 border-l border-white/10 flex flex-col">
                 <div className="p-8 border-b border-white/5 flex justify-between items-center">
-                  <h3 className="text-2xl font-black italic uppercase italic text-white flex items-center gap-2">Seu <span className="text-amber-500">Carrinho PRO</span></h3>
+                  <h3 className="text-2xl font-black italic uppercase italic text-white flex items-center gap-2">Seu <span className="text-amber-500">Carrinho</span></h3>
                   <button onClick={() => { setIsCartOpen(false); setCheckoutStep('cart'); }} className="p-2 hover:bg-white/10 rounded-full text-white"><X size={24}/></button>
                 </div>
 
@@ -318,7 +318,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
                             <QrCode size={40} className="text-amber-500" />
                           </div>
                           <div className="space-y-2">
-                            <h4 className="text-xl font-black italic uppercase text-white">Pagamento via PIX PRO</h4>
+                            <h4 className="text-xl font-black italic uppercase text-white">Pagamento via PIX</h4>
                             <p className="text-xs text-slate-400">Escaneie o QR Code ou copie a chave abaixo</p>
                           </div>
                           <div className="aspect-square w-48 mx-auto bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.2)]">
@@ -364,7 +364,7 @@ export const StoreTab = React.memo(({ profile }: StoreTabProps) => {
                       onClick={() => setCheckoutStep('payment')}
                       className="w-full bg-amber-500 text-white py-5 rounded-2xl font-black italic uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-amber-500/20 shimmer-btn-effect"
                      >
-                       Gerar PIX PRO <ArrowRight size={20} />
+                       Finalizar Compra <ArrowRight size={20} />
                      </button>
                    )}
                    {checkoutStep === 'payment' && (

@@ -6,10 +6,9 @@ interface ImageUploadProps {
   onImageAction: (base64: string) => void;
   currentImage?: string;
   label: string;
-  className?: string;
 }
 
-export const ImageUpload = ({ onImageAction, currentImage, label, className }: ImageUploadProps) => {
+export const ImageUpload = ({ onImageAction, currentImage, label }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | undefined>(currentImage);
 
@@ -56,7 +55,7 @@ export const ImageUpload = ({ onImageAction, currentImage, label, className }: I
       <label className="text-[10px] uppercase font-mono tracking-widest text-slate-500 ml-1">{label}</label>
       <div 
         onClick={() => fileInputRef.current?.click()}
-        className={`relative w-full ${className || 'h-40'} bg-neutral-900 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/50 transition-all group overflow-hidden`}
+        className="relative w-full h-40 bg-neutral-900 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/50 transition-all group overflow-hidden"
       >
         {preview ? (
           <>

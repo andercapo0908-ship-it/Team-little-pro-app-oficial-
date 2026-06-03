@@ -28,7 +28,7 @@ export const AICoachTab = React.memo(({ profile }: { profile: UserProfile | null
   const [messages, setMessages] = useState<ChatMessage[]>([
     { 
       role: 'assistant', 
-      content: "Olá! Sou seu Coach Inteligente do TEAM LITTLE PRO. Como posso otimizar seu treino ou dieta hoje?" 
+      content: "Olá! Sou seu Coach Inteligente. Como posso otimizar seu treino ou dieta hoje?" 
     }
   ]);
   const [input, setInput] = useState("");

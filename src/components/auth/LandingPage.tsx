@@ -32,7 +32,7 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 1, 0] }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 7.0, times: [0, 0.05, 0.95, 1], ease: "easeInOut" }}
+            transition={{ duration: 7.0, times: [0, 0.08, 0.92, 1], ease: "easeInOut" }}
             className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-center bg-premium-black"
           >
             <div className="relative flex items-center justify-center w-full h-full">
@@ -46,6 +46,16 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-premium-black via-transparent to-transparent pointer-events-none opacity-80" />
               
+              {/* Angled Welcome Message */}
+              <div className="absolute top-1/4 right-[5%] sm:right-[15%] transform rotate-12 bg-black/70 border border-gold/30 px-6 py-3.5 rounded-2xl shadow-xl backdrop-blur-md z-20">
+                <p className="text-amber-500 font-mono tracking-[0.25em] text-[9px] sm:text-[10px] font-black uppercase text-center">
+                  SEJA BEM-VINDO(A)S
+                </p>
+                <p className="text-[13px] sm:text-[15px] tracking-tight text-white font-black uppercase text-center mt-0.5 leading-none italic">
+                  AO NOSSO TIME
+                </p>
+              </div>
+
               <div className="absolute bottom-16 md:bottom-24 z-10 flex flex-col items-center justify-center w-full">
                 <h1 className="text-5xl md:text-7xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-gold via-white to-silver uppercase tracking-[0.1em] md:tracking-[0.2em] drop-shadow-2xl text-center leading-none">
                   WARLYSON
@@ -73,7 +83,7 @@ export const LandingPage = React.memo(({ onSelectRole }: LandingPageProps) => {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: showIntro ? 6.8 : 0, duration: 0.3, ease: "easeOut" }}
+        transition={{ delay: showIntro ? 1.6 : 0, duration: 0.3, ease: "easeOut" }}
         className="flex flex-col items-center justify-center h-full w-full max-w-lg mx-auto relative z-10"
       >
         

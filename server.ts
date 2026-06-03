@@ -22,30 +22,6 @@ function getGeminiClient() {
   return aiClient;
 }
 
-async function generateWithRetry(params: any, retries = 3, delayMs = 1000): Promise<any> {
-  const ai = getGeminiClient();
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await ai.models.generateContent(params);
-    } catch (error: any) {
-      const errorStr = JSON.stringify(error) || error?.message || "";
-      const isTransient = errorStr.includes("503") || 
-                          errorStr.includes("UNAVAILABLE") || 
-                          errorStr.includes("high demand") || 
-                          errorStr.includes("504") ||
-                          error?.status === 503 ||
-                          error?.status === 504;
-      if (isTransient && i < retries - 1) {
-        console.warn(`[Gemini API Warning] Service unavailable (Attempt ${i + 1}/${retries}). Retrying in ${delayMs}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-        delayMs *= 2;
-        continue;
-      }
-      throw error;
-    }
-  }
-}
-
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -60,58 +36,45 @@ async function startServer() {
   app.post("/api/gemini/suggest-workout", async (req, res) => {
     try {
       const { goal, muscleGroup } = req.body;
-      const response = await generateWithRetry({
+      const ai = getGeminiClient();
+      const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
         contents: `Sugira 3 nomes criativos e motivadores para um treino de personal trainer com foco em ${goal} para o grupo muscular ${muscleGroup}. Retorne apenas os nomes separados por vírgula.`,
       });
       const names = response.text?.split(',') || [];
-      res.json({ names: names.map((n: string) => n.trim()).filter(Boolean) });
+      res.json({ names: names.map(n => n.trim()).filter(Boolean) });
     } catch (error: any) {
       console.error("Gemini Workout Suggestion Error:", error);
-      res.json({ names: ["Treino Personalizado", "Hipertrofia Extrema", "Foco & Disciplina"] });
+      res.status(500).json({ error: error.message, fallback: ["Treino Personalizado"] });
     }
   });
 
   app.post("/api/gemini/analyze-evolution", async (req, res) => {
     try {
       const { history } = req.body;
-      const response = await generateWithRetry({
+      const ai = getGeminiClient();
+      const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
         contents: `Analise a evolução deste aluno baseado nestes dados de peso e medidas: ${JSON.stringify(history)}. Retorne um resumo motivador em 3 frases.`,
       });
       res.json({ analysis: response.text });
     } catch (error: any) {
       console.error("Gemini Evolution Analysis Error:", error);
-      res.json({ analysis: "Continue focado! Seus resultados virão com consistência, dedicação e disciplina diária." });
-    }
-  });
-
-  app.post("/api/gemini/explain-exercise", async (req, res) => {
-    const { name, description, muscleGroup } = req.body;
-    try {
-      const response = await generateWithRetry({
-        model: "gemini-3.5-flash",
-        contents: `Explique a execução correta do exercício de academia "${name}" com foco na musculatura de (${muscleGroup}) profissionalmente em Português do Brasil.
-Se houver uma descrição em inglês ou incompleta, traduza e expanda se necessário: "${description || 'Sem descrição cadastrada'}".
-Retorne um texto fluido, rico em detalhes anatômicos e biomecânicos de alta performance, com no máximo 4 frases, focando na postura correta, movimento e respiração. Sem tópicos, retorne apenas o parágrafo explicativo diretamente.`,
-      });
-      res.json({ explanation: response.text?.trim() });
-    } catch (error: any) {
-      console.error("Gemini Explain Exercise Error:", error);
-      res.json({ explanation: description || "Execute o movimento da forma correta, com cadência controlada, mantendo o abdômen ativado e as articulações estabilizadas no ângulo correto." });
+      res.status(500).json({ error: error.message, fallback: "Continue focado! Seus resultados virão com consistência." });
     }
   });
 
   app.post("/api/gemini/coach-chat", async (req, res) => {
     try {
       const { messages, profile } = req.body;
+      const ai = getGeminiClient();
       
       const contents = messages.map((m: any) => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
       }));
 
-      const response = await generateWithRetry({
+      const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
         contents,
         config: {
@@ -131,10 +94,9 @@ Retorne um texto fluido, rico em detalhes anatômicos e biomecânicos de alta pe
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini Coach Chat Error:", error);
-      res.json({ text: "Ops! Nosso servidor inteligente está com um fluxo enorme de atletas agora. Mantenha o foco absoluto e tente mandar sua mensagem em alguns minutos! PRA CIMA! 🔥🏋️‍♂️" });
+      res.status(500).json({ error: error.message, fallback: "Ops! Deu um curto aqui no meu processador. Verifique sua conexão e tente novamente!" });
     }
   });
-
 
   // Explicit PWA routes to ensure correct mime-types and prevent SPA HTML fallback redirects
   app.get("/manifest.json", (req, res) => {

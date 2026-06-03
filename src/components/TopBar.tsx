@@ -60,7 +60,6 @@ export const TopBar = React.memo(({ onOpenSidebar, onLogout, onBack, canGoBack }
         <div className="flex items-center gap-1.5 leading-none">
           <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-amber-500">TEAM</span>
           <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-white">LITTLE</span>
-          <span className="font-black italic tracking-widest text-[10px] sm:text-xs text-[#FFFDF5]">PRO</span>
         </div>
       </div>
       

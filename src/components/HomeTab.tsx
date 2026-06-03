@@ -96,11 +96,11 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
           style={{ willChange: "transform" }}
           className="whitespace-nowrap flex"
         >
-          <span className="text-black font-black italic uppercase tracking-[0.2em] text-[10px] mx-4">
-            TEAM LITTLE PRO • A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • PERFORMANCE DE ELITE • NO LIMITS • 
+           <span className="text-black font-black italic uppercase tracking-[0.2em] text-[10px] mx-4">
+            TEAM LITTLE • A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • PERFORMANCE DE ELITE • NO LIMITS • 
           </span>
           <span className="text-black font-black italic uppercase tracking-[0.2em] text-[10px] mx-4">
-            TEAM LITTLE PRO • A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • PERFORMANCE DE ELITE • NO LIMITS • 
+            TEAM LITTLE • A DOR É TEMPORÁRIA, A GLÓRIA É ETERNA • PERFORMANCE DE ELITE • NO LIMITS • 
           </span>
         </motion.div>
       </div>
@@ -113,7 +113,7 @@ export const HomeTab = React.memo(({ profile, onNavigate }: { profile: UserProfi
               Salve, <span className="text-amber-500">{profile?.name?.split(' ')[0] || 'Atleta'}</span>!
             </h2>
             <p className="text-slate-500 text-[10px] uppercase font-mono tracking-widest mt-1">
-              Bem-vindo ao Team Little <span className="text-[#FFFDF5] font-black underline underline-offset-4 decoration-amber-500/50">PRO</span>
+              Bem-vindo ao Team Little <span className="text-[#FFFDF5] font-black underline underline-offset-4 decoration-amber-500/50">TIME</span>
             </p>
           </div>
           

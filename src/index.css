@@ -37,6 +37,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: #FFFDF5;
   background-color: #050505;
+  /* Premium Matte Black with subtle organic amber paint brush splatters and fine texture */
+  background-image: 
+    /* Top-left soft yellow/gold brush stroke paint effect */
+    radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.07) 0%, rgba(212, 175, 55, 0.02) 20%, transparent 45%),
+    /* Bottom-right soft warm brush stroke paint effect */
+    radial-gradient(circle at 88% 78%, rgba(212, 175, 55, 0.06) 0%, rgba(212, 175, 55, 0.01) 25%, transparent 55%),
+    /* Center auxiliary support glow */
+    radial-gradient(circle at 60% 40%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+    /* Matte premium carbon structure */
+    radial-gradient(ellipse at center, rgba(10, 10, 10, 0.95), #020202),
+    /* Discrete fine-grain physical structure grid overlay */
+    radial-gradient(rgba(212, 175, 55, 0.015) 1.5px, transparent 1.5px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+  background-attachment: fixed;
 }
 
 /* Letras brancas com contorno preto */
@@ -163,5 +177,24 @@ body {
 }
 .border-amber-500\/50 {
   border-color: #6e5414 !important; /* Replaces semi-transparent gold with solid gold */
+}
+
+/* Light flash animation (shimmer) for text styling */
+.text-shine {
+  position: relative !important;
+  display: inline-block !important;
+  overflow: hidden !important;
+}
+
+.text-shine::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  width: 120px !important;
+  height: 100% !important;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.45), transparent) !important;
+  transform: skewX(-25deg) !important;
+  animation: shine 4s infinite ease-in-out !important;
+  pointer-events: none !important;
 }
 

@@ -39,7 +39,6 @@ import { LoginForm } from "./components/auth/LoginForm";
 import { AdminTab } from "./components/AdminTab";
 import { AICoachTab } from "./components/AICoachTab";
 import { ChatTab } from "./components/ChatTab";
-import { ExerciseLibrary } from "./components/ExerciseLibrary";
 
 // --- Types & Constants ---
 enum OperationType { CREATE = 'create', UPDATE = 'update', DELETE = 'delete', LIST = 'list', GET = 'get', WRITE = 'write' }
@@ -261,7 +260,6 @@ export default function App() {
       case 'admin': return <AdminTab currentProfile={profile} />;
       case 'ai_coach': return <AICoachTab profile={profile} />;
       case 'workouts': return <WorkoutsTab profile={profile} />;
-      case 'library': return <ExerciseLibrary profile={profile} />;
       case 'store': return <StoreTab profile={profile} />;
       case 'financial': return <FinancialTab profile={profile} />;
       case 'consulting': return <ConsultingTab profile={profile} />;
@@ -280,7 +278,7 @@ export default function App() {
             className="absolute inset-x-0 top-0 bottom-0 bg-gold animate-fast-shimmer gpu-accelerated" 
            />
         </div>
-        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-amber-500/40 font-black animate-pulse">Sincronizando DNA PRO</p>
+        <p className="mt-4 text-[9px] uppercase tracking-[0.5em] text-amber-500/40 font-black animate-pulse">Sincronizando Sistema</p>
       </div>
     );
   }

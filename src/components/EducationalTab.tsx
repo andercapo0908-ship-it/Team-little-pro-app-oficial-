@@ -88,7 +88,7 @@ export const EducationalTab: React.FC<EducationalTabProps> = ({ profile }) => {
           },
           {
             id: 'bench-adv',
-            title: 'Supino PRO: Leg Drive e Retração',
+            title: 'Supino Avançado: Leg Drive e Retração',
             description: 'Como usar as pernas para aumentar sua carga no supino.',
             type: 'article',
             category: 'Técnicas Avançadas',
@@ -195,7 +195,7 @@ export const EducationalTab: React.FC<EducationalTabProps> = ({ profile }) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         <div>
-          <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none mb-2">EDUCACIONAL <span className="text-amber-500">PRO</span></h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">BIBLIOTECA <span className="text-amber-500">ACADÊMICA</span></h2>
           <p className="text-amber-500/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black">Biblioteca de Performance e Conhecimento</p>
         </div>
         

@@ -95,7 +95,7 @@ export const ConsultingTab = React.memo(({ profile }: { profile: UserProfile | n
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">SALA <span className="text-amber-500">PRIVADA PRO</span></h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">SALA <span className="text-amber-500">PRIVADA VIP</span></h2>
           <p className="text-[#FFFDF5]/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Suporte Individualizado Team Little</p>
         </div>
         

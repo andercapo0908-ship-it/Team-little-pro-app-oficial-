@@ -4,7 +4,7 @@ import { Dumbbell, Plus, Trash2, Video, Search, Save, X, Play, Info } from "luci
 import { UserProfile, Workout, Exercise } from "../types";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
-import function ExerciseLibrary() {
+import { ExerciseLibrary } from "./ExerciseLibrary";
 import { StudentWorkoutViewer } from "./StudentWorkoutViewer";
 import { Exercise3DViewer } from "./Exercise3DViewer";
 
@@ -74,7 +74,7 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
     <div className="p-6 md:p-8 pb-32 max-w-6xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">TEAM LITTLE <span className="text-amber-500">PRO</span></h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">PERFORMANCE <span className="text-amber-500">INDIVIDUAL</span></h2>
           <p className="text-amber-500/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">
             Prescrição & Performance de Elite
           </p>
@@ -170,14 +170,12 @@ export const WorkoutsTab = React.memo(({ profile }: WorkoutsTabProps) => {
         <ExerciseLibrary profile={profile} />
       )}
 
-      <AnimatePresence>
-        {viewingWorkout && (
-          <StudentWorkoutViewer 
-             workout={viewingWorkout} 
-             onClose={() => setViewingWorkout(null)} 
-          />
-        )}
-      </AnimatePresence>
+      {viewingWorkout && (
+        <StudentWorkoutViewer 
+           workout={viewingWorkout} 
+           onClose={() => setViewingWorkout(null)} 
+        />
+      )}
     </div>
   );
 });

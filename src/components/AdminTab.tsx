@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Users, 
@@ -40,6 +40,110 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
   const [studentEvaluations, setStudentEvaluations] = useState<Evaluation[]>([]);
   const [editingEvaluation, setEditingEvaluation] = useState<Evaluation | null>(null);
 
+  // Auto-Save background states
+  const [userAutoSaveStatus, setUserAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [workoutAutoSaveStatus, setWorkoutAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [evaluationAutoSaveStatus, setEvaluationAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+
+  const previousUserRef = useRef<UserProfile | null>(null);
+  const previousWorkoutRef = useRef<Workout | null>(null);
+  const previousEvaluationRef = useRef<Evaluation | null>(null);
+
+  const isAdmin = currentProfile?.role === 'admin' || currentProfile?.role === 'trainer' || currentProfile?.email === 'andercapo0908@gmail.com';
+
+  // Debounced auto-save for user/student details
+  useEffect(() => {
+    if (!editingUser || !isAdmin) {
+      previousUserRef.current = null;
+      return;
+    }
+    // Skip saving first loaded snapshot to prevent redundant operations
+    if (!previousUserRef.current || previousUserRef.current.uid !== editingUser.uid) {
+      previousUserRef.current = editingUser;
+      return;
+    }
+    
+    setUserAutoSaveStatus("saving");
+    const timer = setTimeout(async () => {
+      try {
+        await updateDoc(doc(db, "users", editingUser.uid), {
+          ...editingUser
+        });
+        setUserAutoSaveStatus("saved");
+        previousUserRef.current = editingUser;
+        setTimeout(() => setUserAutoSaveStatus("idle"), 2500);
+      } catch (err) {
+        console.error("Auto-saving user details error:", err);
+        setUserAutoSaveStatus("idle");
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [editingUser, isAdmin]);
+
+  // Debounced auto-save for edited workouts
+  useEffect(() => {
+    if (!editingStudentWorkout || !editingUser || !isAdmin) {
+      previousWorkoutRef.current = null;
+      return;
+    }
+    if (!editingStudentWorkout.name) return;
+
+    // Skip saving loaded snapshot of existing/new workout to prevent redundant operations
+    if (!previousWorkoutRef.current || previousWorkoutRef.current.id !== editingStudentWorkout.id) {
+      previousWorkoutRef.current = editingStudentWorkout;
+      return;
+    }
+
+    setWorkoutAutoSaveStatus("saving");
+    const timer = setTimeout(async () => {
+      try {
+        await setDoc(doc(db, "workouts", editingStudentWorkout.id), {
+          ...editingStudentWorkout
+        });
+        setWorkoutAutoSaveStatus("saved");
+        previousWorkoutRef.current = editingStudentWorkout;
+        setTimeout(() => setWorkoutAutoSaveStatus("idle"), 2500);
+      } catch (err) {
+        console.error("Auto-saving workout error:", err);
+        setWorkoutAutoSaveStatus("idle");
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [editingStudentWorkout, editingUser, isAdmin]);
+
+  // Debounced auto-save for edited assessments/evaluations
+  useEffect(() => {
+    if (!editingEvaluation || !editingUser || !isAdmin) {
+      previousEvaluationRef.current = null;
+      return;
+    }
+
+    // Skip saving loaded snapshot to prevent redundant operations
+    if (!previousEvaluationRef.current || previousEvaluationRef.current.id !== editingEvaluation.id) {
+      previousEvaluationRef.current = editingEvaluation;
+      return;
+    }
+
+    setEvaluationAutoSaveStatus("saving");
+    const timer = setTimeout(async () => {
+      try {
+        await setDoc(doc(db, "evaluations", editingEvaluation.id), {
+          ...editingEvaluation
+        });
+        setEvaluationAutoSaveStatus("saved");
+        previousEvaluationRef.current = editingEvaluation;
+        setTimeout(() => setEvaluationAutoSaveStatus("idle"), 2500);
+      } catch (err) {
+        console.error("Auto-saving evaluation error:", err);
+        setEvaluationAutoSaveStatus("idle");
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [editingEvaluation, editingUser, isAdmin]);
+
   useEffect(() => {
     if (!editingUser) {
       setStudentWorkouts([]);
@@ -65,8 +169,6 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
     });
     return () => unsub();
   }, [editingUser]);
-
-  const isAdmin = currentProfile?.role === 'admin' || currentProfile?.role === 'trainer' || currentProfile?.email === 'andercapo0908@gmail.com';
 
   useEffect(() => {
     // Listen for all users
@@ -274,12 +376,12 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                 {users.filter(u => u.role === 'student').map(u => (
                   <div key={u.uid} className="bg-neutral-900 border border-white/5 rounded-[2.5rem] p-6 hover:border-amber-500/50 transition-all group overflow-hidden relative shadow-2xl">
                     <div className="flex items-center gap-5 mb-6">
-                      <div className="w-16 h-16 rounded-2xl border-2 border-amber-500/20 overflow-hidden relative bg-neutral-950 flex items-center justify-center">
-                        <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.uid}`} className="w-full h-full object-contain" alt="Profile" />
+                      <div className="w-14 h-14 rounded-full border border-amber-500/40 overflow-hidden relative bg-neutral-950 flex items-center justify-center shadow-lg">
+                        <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.uid}`} className="w-full h-full object-cover" alt="Profile" />
                       </div>
                       <div>
-                        <h4 className="font-black italic text-xl uppercase tracking-tight text-white">{u.name}</h4>
-                        <p className="text-[9px] font-mono uppercase tracking-widest text-amber-500">Atleta DNA PRO</p>
+                        <h4 className="font-black italic text-lg uppercase tracking-tight text-white">{u.name}</h4>
+                        <p className="text-[9px] font-mono uppercase tracking-widest text-amber-500">Atleta Team Little</p>
                         <p className="text-[8px] font-mono uppercase tracking-widest text-slate-500 mt-0.5">{u.email}</p>
                       </div>
                     </div>
@@ -304,11 +406,11 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                   {users.filter(u => u.role !== 'student').map(u => (
                     <div key={u.uid} className="bg-black/40 border border-white/10 rounded-[2.5rem] p-6 hover:border-amber-500/30 transition-all group overflow-hidden relative shadow-2xl">
                       <div className="flex items-center gap-5 mb-6">
-                        <div className="w-16 h-16 rounded-2xl border-2 border-amber-500/50 overflow-hidden relative bg-neutral-950 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.1)]">
-                          <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.uid}`} className="w-full h-full object-contain" alt="Profile" />
+                        <div className="w-14 h-14 rounded-full border border-amber-500/40 overflow-hidden relative bg-neutral-950 flex items-center justify-center shadow-lg">
+                          <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.uid}`} className="w-full h-full object-cover" alt="Profile" />
                         </div>
                         <div>
-                          <h4 className="font-black italic text-xl uppercase tracking-tight text-white">{u.name}</h4>
+                          <h4 className="font-black italic text-lg uppercase tracking-tight text-white">{u.name}</h4>
                           <span className={`text-[8px] font-black italic px-2 py-0.5 rounded-full uppercase ${u.role === 'admin' ? 'bg-amber-500 text-black' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
                             {u.role}
                           </span>
@@ -354,8 +456,17 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                     >
                        <div className="flex justify-between items-start mb-8">
                          <div>
-                           <h3 className="text-4xl font-black italic uppercase tracking-tighter">Gerenciar {editingUser.name}</h3>
-                           <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-500">PAINEL DO TREINADOR DNA PRO</p>
+                           <h3 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter">Gerenciar {editingUser.name}</h3>
+                           <div className="flex items-center gap-3 mt-1 flex-wrap">
+                             <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">PAINEL DO TREINADOR</p>
+                             {userAutoSaveStatus !== "idle" && (
+                               <span className={`text-[8px] sm:text-[9px] font-mono uppercase tracking-widest font-black px-2 py-0.5 rounded bg-black/40 ${
+                                 userAutoSaveStatus === "saving" ? "text-amber-500 animate-pulse border border-amber-500/10" : "text-emerald-500 border border-emerald-500/15"
+                               }`}>
+                                 {userAutoSaveStatus === "saving" ? "• SALVANDO..." : "✓ AUTO-SALVO"}
+                               </span>
+                             )}
+                           </div>
                          </div>
                          <button onClick={() => setEditingUser(null)} className="p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors cursor-pointer text-white">
                            <X size={18} />
@@ -522,7 +633,16 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                              <div className="bg-premium-card border border-neutral-800 rounded-[2.5rem] p-6 space-y-6">
                                <div className="flex justify-between items-center border-b border-white/5 pb-4">
                                  <h4 className="font-mono text-xs uppercase text-amber-500 font-black tracking-widest">
-                                   {editingStudentWorkout.id.startsWith('wk_new') ? 'Criando Novo Plano' : 'Editando Plano de Treino'}
+                                   <span className="flex items-center gap-3">
+                                     <span>{editingStudentWorkout.id.startsWith('wk_new') ? 'Criando Novo Plano' : 'Editando Plano de Treino'}</span>
+                                     {workoutAutoSaveStatus !== "idle" && (
+                                       <span className={`text-[8px] sm:text-[9px] font-mono normal-case tracking-wider font-bold px-2 py-0.5 rounded bg-black/40 ${
+                                         workoutAutoSaveStatus === "saving" ? "text-amber-500 animate-pulse border border-amber-500/10" : "text-emerald-500 border border-emerald-500/15"
+                                       }`}>
+                                         {workoutAutoSaveStatus === "saving" ? "• Salvando..." : "✓ Gravado"}
+                                       </span>
+                                     )}
+                                   </span>
                                  </h4>
                                  <button 
                                    type="button"
@@ -771,7 +891,18 @@ export const AdminTab = ({ currentProfile }: { currentProfile: UserProfile | nul
                            {editingEvaluation ? (
                              <div className="bg-black/20 border border-white/5 rounded-[2.5rem] p-6 space-y-6">
                                <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                                 <h4 className="font-mono text-xs uppercase text-amber-500 font-black tracking-widest">Registrar Nova Avaliação</h4>
+                                 <h4 className="font-mono text-xs uppercase text-amber-500 font-black tracking-widest">
+                                   <span className="flex items-center gap-3">
+                                     <span>Registrar Nova Avaliação</span>
+                                     {evaluationAutoSaveStatus !== "idle" && (
+                                       <span className={`text-[8px] sm:text-[9px] font-mono normal-case tracking-wider font-bold px-2 py-0.5 rounded bg-black/40 ${
+                                         evaluationAutoSaveStatus === "saving" ? "text-amber-500 animate-pulse border border-amber-500/10" : "text-emerald-500 border border-emerald-500/15"
+                                       }`}>
+                                         {evaluationAutoSaveStatus === "saving" ? "• Salvando..." : "✓ Gravado"}
+                                       </span>
+                                     )}
+                                   </span>
+                                 </h4>
                                  <button type="button" onClick={() => setEditingEvaluation(null)} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-mono uppercase tracking-widest cursor-pointer text-white">Voltar</button>
                                </div>
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -43,7 +43,7 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
   
   // Mock videos for demonstration if no DB videos
   const [videos] = useState([
-    { id: 'v1', title: 'Técnica de Agachamento PRO', url: 'https://www.youtube.com/embed/n4p_8V27U3A', category: 'Tutorial' },
+    { id: 'v1', title: 'Técnica de Agachamento Avançado', url: 'https://www.youtube.com/embed/n4p_8V27U3A', category: 'Tutorial' },
     { id: 'v2', title: 'Motivação Team Little', url: 'https://www.youtube.com/embed/SzhO5U-6f3Q', category: 'Highlights' },
     { id: 'v3', title: 'Biomecânica do Supino', url: 'https://www.youtube.com/embed/v9QE6T_h9Xg', category: 'Técnica' }
   ]);
@@ -98,7 +98,7 @@ export const GalleryTab = React.memo(({ profile }: { profile: UserProfile | null
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">GALERIA <span className="text-amber-500">PRO</span></h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">GALERIA DE <span className="text-amber-500">MUDANÇA</span></h2>
           <p className="text-[#FFFDF5]/60 font-mono text-[10px] uppercase tracking-[0.5em] font-black mt-2">Mural de Transformação & Conteúdo</p>
         </div>
         

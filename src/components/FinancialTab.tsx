@@ -32,7 +32,7 @@ export const FinancialTab = React.memo(({ profile }: { profile: UserProfile | nu
     <div className="p-6 md:p-8 pb-32 max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter">FINANCEIRO <span className="text-amber-500">PRO</span></h2>
+        <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">CONTROLE <span className="text-amber-500">FINANCEIRO</span></h2>
         <p className="text-[#FFFDF5] font-mono text-[10px] uppercase tracking-[0.5em] font-black">Saldos & Transparência Team Little</p>
       </div>
 

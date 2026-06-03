@@ -19,19 +19,19 @@ export const PortfolioTab = React.memo(({ profile }: { profile: any }) => {
   return (
     <div className="p-6 pb-24 max-w-5xl mx-auto space-y-16">
       <div className="relative">
-        <div className="w-full h-96 rounded-[4rem] overflow-hidden shadow-2xl">
+        <div className="w-full h-80 rounded-[2.5rem] overflow-hidden shadow-2xl">
           <img src="https://picsum.photos/seed/fitness/1200/800" className="w-full h-full object-cover" alt="Cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
         </div>
-        <div className="absolute -bottom-12 left-12 w-48 h-48 rounded-[4rem] border-[10px] border-black overflow-hidden bg-neutral-900 shadow-2xl">
+        <div className="absolute -bottom-10 left-12 w-40 h-40 rounded-full border-[6px] border-neutral-950 overflow-hidden bg-neutral-900 shadow-2xl">
            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=coach" className="w-full h-full object-cover" alt="Coach Avatar" />
         </div>
       </div>
 
-      <div className="pt-8 mb-12 flex flex-col items-center md:items-start">
-        <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase mb-4 leading-none">Coach Little</h2>
-        <div className="px-6 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full">
-          <p className="text-amber-400 font-mono tracking-[0.5em] text-[10px] uppercase font-black">Elite Head Coach & Performance Engineer Team Little PRO</p>
+      <div className="pt-6 mb-10 flex flex-col items-center md:items-start select-none">
+        <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase mb-3 leading-none text-white">Coach Little</h2>
+        <div className="px-5 py-2 bg-amber-500/10 border border-amber-500/10 rounded-full">
+          <p className="text-amber-400 font-mono tracking-[0.4em] text-[9px] uppercase font-black">Elite Head Coach & Performance Engineer Team Little</p>
         </div>
       </div>
 
