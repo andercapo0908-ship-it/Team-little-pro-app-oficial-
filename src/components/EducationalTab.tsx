@@ -181,12 +181,39 @@ export const EducationalTab: React.FC<EducationalTabProps> = ({ profile }) => {
 
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
-    if (url.includes('youtube.com/watch?v=')) {
-      return url.replace('watch?v=', 'embed/');
+    let embedUrl = url;
+    let videoId = '';
+
+    try {
+      if (embedUrl.includes('youtube.com/watch?v=')) {
+        const parts = embedUrl.split('v=');
+        if (parts[1]) {
+          videoId = parts[1].split('&')[0];
+        }
+      } else if (embedUrl.includes('youtube.com/shorts/')) {
+        const parts = embedUrl.split('/shorts/');
+        if (parts[1]) {
+          videoId = parts[1].split('?')[0];
+        }
+      } else if (embedUrl.includes('youtu.be/')) {
+        const parts = embedUrl.split('youtu.be/');
+        if (parts[1]) {
+          videoId = parts[1].split('?')[0];
+        }
+      } else if (embedUrl.includes('youtube.com/embed/')) {
+        const parts = embedUrl.split('/embed/');
+        if (parts[1]) {
+          videoId = parts[1].split('?')[0];
+        }
+      }
+
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&modestbranding=1&rel=0`;
+      }
+    } catch (e) {
+      console.error("Error parsing educational video:", e);
     }
-    if (url.includes('youtu.be/')) {
-      return url.replace('youtu.be/', 'youtube.com/embed/');
-    }
+
     return url;
   };
 

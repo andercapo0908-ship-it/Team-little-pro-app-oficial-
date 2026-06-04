@@ -4,7 +4,7 @@ import { Dumbbell, Plus, Trash2, Video, Search, Save, X, Play, Info } from "luci
 import { UserProfile, Workout, Exercise } from "../types";
 import { db } from "../lib/firebase";
 import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
-import { ExerciseLibrary } from "./ExerciseLibrary";
+import { ExerciseLibrary } from "./workouts/ExerciseLibrary";
 import { StudentWorkoutViewer } from "./StudentWorkoutViewer";
 import { Exercise3DViewer } from "./Exercise3DViewer";
 
@@ -235,7 +235,7 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
   const handleAddExercise = () => {
     setWorkout({
       ...workout,
-      exercises: [...workout.exercises, { name: "", sets: 3, reps: "10-12", load: "Moderada", rest: "60s", muscleGroup: "Peitoral", videoUrl: "" }]
+      exercises: [...workout.exercises, { name: "", sets: 3, reps: "10-12", load: "Moderada", rest: "60s", muscleGroup: "Peito", videoUrl: "" }]
     });
   };
 
@@ -381,7 +381,7 @@ const WorkoutEditor = ({ workout: initialWorkout, profile, onClose }: { workout:
 
               <div className="md:col-span-2 space-y-2">
                 <label className="text-[9px] font-mono text-slate-500 uppercase">Grupo / Foco</label>
-                <input type="text" value={ex.muscleGroup} onChange={e => handleUpdateExercise(i, 'muscleGroup', e.target.value)} className="w-full bg-transparent border-b border-white/10 pb-2 text-sm font-bold text-white outline-none focus:border-amber-500 uppercase" placeholder="Peitoral" />
+                <input type="text" value={ex.muscleGroup} onChange={e => handleUpdateExercise(i, 'muscleGroup', e.target.value)} className="w-full bg-transparent border-b border-white/10 pb-2 text-sm font-bold text-white outline-none focus:border-amber-500 uppercase" placeholder="Peito" />
               </div>
               
               <div className="md:col-span-2 space-y-2">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Play, Dumbbell, Timer, CheckCircle, Rotate3D } from 'lucide-react';
+import { X, Play, Dumbbell, Timer, CheckCircle, Rotate3D, Search } from 'lucide-react';
 import { Workout, Exercise } from '../types';
 import { Exercise3DViewer } from './Exercise3DViewer';
 
@@ -14,6 +14,7 @@ export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => 
   const [completedSets, setCompletedSets] = useState<Record<string, number>>({});
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restTime, setRestTime] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const toggleSetCompletion = (exerciseName: string, maxSets: number) => {
     const current = completedSets[exerciseName] || 0;
@@ -39,6 +40,12 @@ export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => 
     }
   };
 
+  const filteredExercises = workout.exercises.filter(ex => {
+    if (!searchQuery.trim()) return true;
+    return ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           (ex.muscleGroup && ex.muscleGroup.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
+
   return (
     <>
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-4 bg-premium-black overflow-y-auto">
@@ -62,38 +69,73 @@ export const StudentWorkoutViewer = React.memo(({ workout, onClose }: Props) => 
         </div>
 
         <div className="p-6 sm:p-8 space-y-6">
-           <div className="flex flex-wrap gap-2 mb-6">
+           <div className="flex flex-wrap gap-2 mb-4">
               <span className="px-3 py-1.5 bg-gold/10 text-gold text-[10px] font-black uppercase tracking-widest rounded-full">{workout.exercises.length} Exercícios</span>
               <span className="px-3 py-1.5 bg-white/5 text-slate-400 text-[10px] font-mono uppercase tracking-widest rounded-full border border-white/5">{workout.duration}</span>
            </div>
 
+           {/* Central de Busca de Animações / Hologramas */}
+           <div className="relative mb-6">
+             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+               <Search className="text-amber-500 animate-pulse" size={16} />
+             </div>
+             <input
+               type="text"
+               placeholder="Buscar exercício para ver animação..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               className="w-full bg-black/60 border border-white/10 focus:border-amber-500/50 rounded-2xl py-3.5 pl-12 pr-12 text-xs text-white outline-none transition-all font-sans tracking-wide placeholder:text-slate-600 shadow-[inset_0_1px_8px_rgba(255,255,255,0.02)]"
+             />
+             {searchQuery && (
+               <button 
+                 onClick={() => setSearchQuery("")}
+                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-mono tracking-widest text-amber-500 hover:text-white transition-colors uppercase font-black"
+               >
+                 [LIMPAR]
+               </button>
+             )}
+           </div>
+
+           {searchQuery.trim().length === 0 && (
+             <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 text-center">
+               <span className="text-[10px] font-mono uppercase text-amber-500 tracking-widest font-black block mb-1">🧬 MÓDULO BIOMECÂNICO ATIVO</span>
+               <p className="text-[10px] text-slate-400 italic">Digite o nome de um exercício ou grupo muscular acima para liberar as animações holographic 3D!</p>
+             </div>
+           )}
+
            <div className="space-y-6">
-             {workout.exercises.map((ex, i) => {
+             {filteredExercises.map((ex, i) => {
                 const completed = completedSets[ex.name] || 0;
                 const isAllSetsCompleted = completed >= ex.sets;
+                const isSearched = searchQuery.trim().length > 0 && (
+                  ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  (ex.muscleGroup && ex.muscleGroup.toLowerCase().includes(searchQuery.toLowerCase()))
+                );
 
                 return (
                   <motion.div 
                     key={i}
                     whileHover={{ scale: 1.01 }}
-                    className={`bg-black/30 border border-white/5 rounded-[2rem] p-5 sm:p-6 shadow-xl transition-all relative overflow-hidden ${isAllSetsCompleted ? 'ring-1 ring-gold/30 opacity-70' : ''}`}
+                    className={`bg-black/30 border border-white/5 rounded-[2rem] p-5 sm:p-6 shadow-xl transition-all relative overflow-hidden ${isAllSetsCompleted ? 'ring-1 ring-gold/30 opacity-70' : ''} ${isSearched ? 'border-amber-500/40 shadow-[0_0_25px_rgba(245,158,11,0.05)]' : ''}`}
                   >
                      {isAllSetsCompleted && <div className="absolute top-4 right-4 text-gold"><CheckCircle size={20}/></div>}
                      
                      <div className="flex justify-between items-start gap-4 mb-4 pr-6 sm:pr-0">
-                       <div>
+                       <div className="flex-1 min-w-0">
                          <p className="text-[9px] font-mono uppercase text-slate-500 tracking-widest mb-1">{ex.muscleGroup}</p>
-                         <h3 className="text-lg font-black uppercase text-white leading-tight">{ex.name}</h3>
+                         <h3 className="text-lg font-black uppercase text-white leading-tight truncate">{ex.name}</h3>
                        </div>
                        
-                       <button 
-                         onClick={() => setActiveExercise(ex)}
-                         className="flex items-center gap-1.5 bg-gold/10 text-gold hover:bg-gold hover:text-black transition-colors px-3 py-2 rounded-xl shrink-0 border border-gold/20"
-                       >
-                         <Rotate3D size={14} className="animate-slow-spin"/>
-                         <span className="text-[9px] font-black italic tracking-widest uppercase hidden sm:inline">Exibir 3D</span>
-                         <span className="text-[10px] font-black italic tracking-widest uppercase sm:hidden">3D</span>
-                       </button>
+                       {isSearched && (
+                         <button 
+                           onClick={() => setActiveExercise(ex)}
+                           className="flex items-center gap-1.5 bg-amber-500 text-black hover:bg-white hover:scale-105 transition-all px-3 py-2 rounded-xl shrink-0 border border-amber-500 font-bold shadow-[0_0_15px_rgba(245,158,11,0.2)] animate-pulse"
+                         >
+                           <Rotate3D size={14} className="animate-slow-spin"/>
+                           <span className="text-[9px] font-black italic tracking-widest uppercase hidden sm:inline">Ver Holograma</span>
+                           <span className="text-[10px] font-black italic tracking-widest uppercase sm:hidden">3D</span>
+                         </button>
+                       )}
                      </div>
 
                      <div className="grid grid-cols-3 gap-2 mb-4">
